@@ -1,0 +1,6 @@
+@VerifiedIDBackend_HostAddress = http://localhost:5062
+
+GET {{VerifiedIDBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

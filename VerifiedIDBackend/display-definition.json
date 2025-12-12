@@ -1,0 +1,35 @@
+{
+  "locale": "en-US",
+  "card": {
+    "title": "Verified Employee",
+    "issuedBy": "Your Company",
+    "backgroundColor": "#0078d4",
+    "textColor": "#ffffff",
+    "logo": {
+      "uri": "https://johnyamanaka.github.io/.well-known/logo.png",
+      "description": "Company Logo"
+    },
+    "description": "Use this credential to prove your employment status"
+  },
+  "consent": {
+    "title": "Employee Verification",
+    "instructions": "Please share your employment information"
+  },
+  "claims": [
+    {
+      "claim": "vc.credentialSubject.firstName",
+      "label": "First Name",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.lastName",
+      "label": "Last Name",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.employeeId",
+      "label": "Employee ID",
+      "type": "String"
+    }
+  ]
+}
