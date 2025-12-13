@@ -1,0 +1,77 @@
+{
+  "attestations": {
+    "idTokenHints": [
+      {
+        "mapping": [
+          {
+            "outputClaim": "firstName",
+            "required": true,
+            "inputClaim": "$.firstName",
+            "indexed": false
+          },
+          {
+            "outputClaim": "lastName",
+            "required": true,
+            "inputClaim": "$.lastName",
+            "indexed": false
+          },
+          {
+            "outputClaim": "employeeId",
+            "required": true,
+            "inputClaim": "$.employeeId",
+            "indexed": false
+          },
+          {
+            "outputClaim": "courseName",
+            "required": false,
+            "inputClaim": "$.courseName",
+            "indexed": false
+          },
+          {
+            "outputClaim": "courseCode",
+            "required": false,
+            "inputClaim": "$.courseCode",
+            "indexed": false
+          },
+          {
+            "outputClaim": "completionDate",
+            "required": false,
+            "inputClaim": "$.completionDate",
+            "indexed": false
+          },
+          {
+            "outputClaim": "grade",
+            "required": false,
+            "inputClaim": "$.grade",
+            "indexed": false
+          },
+          {
+            "outputClaim": "credits",
+            "required": false,
+            "inputClaim": "$.credits",
+            "indexed": false
+          },
+          {
+            "outputClaim": "issuerName",
+            "required": false,
+            "inputClaim": "$.issuerName",
+            "indexed": false
+          },
+          {
+            "outputClaim": "issuerDepartment",
+            "required": false,
+            "inputClaim": "$.issuerDepartment",
+            "indexed": false
+          }
+        ],
+        "required": false
+      }
+    ]
+  },
+  "validityInterval": 2592000,
+  "vc": {
+    "type": [
+      "VerifiedEmployeeV2"
+    ]
+  }
+}

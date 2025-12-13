@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイクロクレデンシャル発行システム</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 マイクロクレデンシャル発行・検証システム</h1>
+            <p class="subtitle">大学・学生・企業をつなぐブロックチェーン証明システム</p>
+        </header>
+
+        <!-- Role Selection -->
+        <div class="role-selector" id="role-selector">
+            <h2>あなたの役割を選択してください</h2>
+            <div class="role-cards">
+                <div class="role-card" onclick="selectRole('university')">
+                    <div class="role-icon">🏛️</div>
+                    <h3>大学</h3>
+                    <p>学生に資格を発行</p>
+                </div>
+                <div class="role-card" onclick="selectRole('student')">
+                    <div class="role-icon">👨‍🎓</div>
+                    <h3>学生</h3>
+                    <p>資格を受け取る</p>
+                </div>
+                <div class="role-card" onclick="selectRole('company')">
+                    <div class="role-icon">🏢</div>
+                    <h3>企業</h3>
+                    <p>資格を確認</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- University View -->
+        <div class="role-view" id="university-view" style="display: none;">
+            <div class="role-header">
+                <div class="role-badge">🏛️ 大学管理者</div>
+                <button class="btn-back" onclick="resetRole()">← 役割選択に戻る</button>
+            </div>
+
+            <div class="info-box university-info">
+                <h3>📋 大学の役割</h3>
+                <p>学生が講座を修了した際に、デジタル資格（Verified Credential）を発行します。</p>
+                <ul>
+                    <li>✅ 学生情報を入力して資格を発行</li>
+                    <li>✅ QRコードを学生に提示</li>
+                    <li>✅ 学生がMicrosoft Authenticatorで受け取り</li>
+                </ul>
+            </div>
+
+            <div class="flow-steps-horizontal">
+                <div class="step active">
+                    <div class="step-num">1</div>
+                    <p>QRコード生成</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <p>学生がスキャン</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <p>資格発行完了</p>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>🎓 資格発行</h3>
+
+                <div class="form-section">
+                    <h4>👤 学生情報</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>姓 <span class="required">*</span></label>
+                            <input type="text" id="lastName" placeholder="例: 山田" value="山田" required>
+                        </div>
+                        <div class="form-group">
+                            <label>名 <span class="required">*</span></label>
+                            <input type="text" id="firstName" placeholder="例: 太郎" value="太郎" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>学生ID / メールアドレス <span class="required">*</span></label>
+                        <input type="text" id="studentId" placeholder="例: student@university.ac.jp" value="student@university.ac.jp" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>📚 講座・資格情報</h4>
+                    <div class="form-group">
+                        <label>講座名 <span class="required">*</span></label>
+                        <input type="text" id="courseName" placeholder="例: データサイエンス基礎コース" value="データサイエンス基礎コース" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>講座コード</label>
+                            <input type="text" id="courseCode" placeholder="例: DS101" value="DS101">
+                        </div>
+                        <div class="form-group">
+                            <label>修了日 <span class="required">*</span></label>
+                            <input type="date" id="completionDate" value="2025-03-15" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>成績</label>
+                            <select id="grade">
+                                <option value="">選択してください</option>
+                                <option value="優秀">優秀</option>
+                                <option value="優">優</option>
+                                <option value="良">良</option>
+                                <option value="可">可</option>
+                                <option value="合格">合格</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>単位数</label>
+                            <input type="number" id="credits" placeholder="例: 2" value="2" min="0" max="10" step="0.5">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>🏛️ 発行機関情報</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>大学名 <span class="required">*</span></label>
+                            <input type="text" id="issuerName" placeholder="例: ○○大学" value="○○大学" required>
+                        </div>
+                        <div class="form-group">
+                            <label>学部・部署</label>
+                            <input type="text" id="issuerDepartment" placeholder="例: 工学部" value="工学部">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="generateIssuanceQR()">📱 発行用QRコードを生成</button>
+
+                <div class="qr-result" id="university-qr-result" style="display: none;">
+                    <h4>✅ QRコード生成完了</h4>
+                    <p>学生にこのQRコードを提示してください</p>
+                    <div class="qr-display">
+                        <img id="university-qr" src="" alt="発行用QRコード">
+                    </div>
+                    <div class="instructions-box">
+                        <strong>学生への指示：</strong>
+                        <ol>
+                            <li>Microsoft Authenticatorアプリを開く</li>
+                            <li>上記のQRコードをスキャン</li>
+                            <li>表示される情報を確認</li>
+                            <li>「送信」をタップして資格を受け取る</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student View -->
+        <div class="role-view" id="student-view" style="display: none;">
+            <div class="role-header">
+                <div class="role-badge">👨‍🎓 学生</div>
+                <button class="btn-back" onclick="resetRole()">← 役割選択に戻る</button>
+            </div>
+
+            <div class="info-box student-info">
+                <h3>📋 学生の役割</h3>
+                <p>大学から発行されたデジタル資格を受け取り、企業に提示します。</p>
+                <ul>
+                    <li>✅ 大学が提示するQRコードをスキャン</li>
+                    <li>✅ 資格をAuthenticatorに保存</li>
+                    <li>✅ 就職活動時に企業へ提示</li>
+                </ul>
+            </div>
+
+            <div class="two-column-layout">
+                <div class="column">
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-badge">ステップ 1</span>
+                            <h3>🎓 資格の受け取り</h3>
+                        </div>
+                        <div class="step-content">
+                            <div class="visual-guide">
+                                <div class="guide-item">
+                                    <div class="guide-icon">🏛️</div>
+                                    <p>大学から提示された<br>QRコードを確認</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">📱</div>
+                                    <p>Microsoft Authenticator<br>でスキャン</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">✅</div>
+                                    <p>情報を確認して<br>受け取り完了</p>
+                                </div>
+                            </div>
+                            <div class="note-box">
+                                <strong>📝 注意：</strong>
+                                <p>QRコードは大学の管理者画面で生成されます。大学の担当者に発行を依頼してください。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-badge">ステップ 2</span>
+                            <h3>🏢 企業への提示</h3>
+                        </div>
+                        <div class="step-content">
+                            <p>就職活動や採用面接で、取得した資格を企業に提示します。</p>
+                            <div class="visual-guide">
+                                <div class="guide-item">
+                                    <div class="guide-icon">🏢</div>
+                                    <p>企業から提示された<br>検証用QRコードを確認</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">📱</div>
+                                    <p>Authenticatorで<br>スキャン</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">🎓</div>
+                                    <p>保存した資格を選択して<br>提示</p>
+                                </div>
+                            </div>
+                            <div class="highlight-box">
+                                <strong>🎁 特典：</strong>
+                                <p>資格検証が完了すると、ブロックチェーン上にSoulbound Token（譲渡不可能な証明）が自動的に発行されます！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>🔒 プライバシー管理</h3>
+                <div class="info-box student-info">
+                    <h4>📋 情報の選択的開示について</h4>
+                    <p>Microsoft Authenticatorでは、企業に資格を提示する際に、開示する情報を選択できます。</p>
+                    <ul>
+                        <li>✅ 氏名、学生ID（基本情報）は必須で開示されます</li>
+                        <li>✅ 講座名、修了日（資格情報）も通常開示されます</li>
+                        <li>🔒 成績、単位数などの詳細情報は、必要に応じて選択的に開示できます</li>
+                    </ul>
+                </div>
+
+                <div class="form-section">
+                    <h4>📊 あなたが保持している資格情報の例</h4>
+                    <div class="credential-preview">
+                        <div class="claim-item">
+                            <div class="claim-header">
+                                <span class="claim-icon">👤</span>
+                                <strong>基本情報</strong>
+                                <span class="claim-badge required-claim">必須</span>
+                            </div>
+                            <p class="claim-description">氏名、学生ID/メールアドレス</p>
+                        </div>
+                        <div class="claim-item">
+                            <div class="claim-header">
+                                <span class="claim-icon">📚</span>
+                                <strong>講座情報</strong>
+                                <span class="claim-badge standard-claim">標準</span>
+                            </div>
+                            <p class="claim-description">講座名、講座コード、修了日</p>
+                        </div>
+                        <div class="claim-item">
+                            <div class="claim-header">
+                                <span class="claim-icon">🎓</span>
+                                <strong>成績情報</strong>
+                                <span class="claim-badge optional-claim">選択可</span>
+                            </div>
+                            <p class="claim-description">成績、単位数（企業への提示時に選択可能）</p>
+                        </div>
+                        <div class="claim-item">
+                            <div class="claim-header">
+                                <span class="claim-icon">🏛️</span>
+                                <strong>発行機関情報</strong>
+                                <span class="claim-badge standard-claim">標準</span>
+                            </div>
+                            <p class="claim-description">大学名、学部・部署</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <strong>💡 ヒント：</strong>
+                    <p>企業が検証用QRコードを提示したときに、Microsoft Authenticatorアプリ内で実際に開示する情報を確認・選択できます。提示前に必ず内容を確認しましょう。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company View -->
+        <div class="role-view" id="company-view" style="display: none;">
+            <div class="role-header">
+                <div class="role-badge">🏢 企業採用担当者</div>
+                <button class="btn-back" onclick="resetRole()">← 役割選択に戻る</button>
+            </div>
+
+            <div class="info-box company-info">
+                <h3>📋 企業の役割</h3>
+                <p>応募者が提示する資格の真正性を検証します。</p>
+                <ul>
+                    <li>✅ 検証用QRコードを生成</li>
+                    <li>✅ 応募者にスキャンしてもらう</li>
+                    <li>✅ 資格情報の真正性を確認</li>
+                    <li>✅ ブロックチェーン証明（SBT）を自動発行</li>
+                </ul>
+            </div>
+
+            <div class="flow-steps-horizontal">
+                <div class="step active">
+                    <div class="step-num">1</div>
+                    <p>QRコード生成</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <p>応募者がスキャン</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <p>資格検証完了</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <p>SBT自動発行</p>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>✅ 資格検証</h3>
+                <div class="form-group">
+                    <label>応募者のウォレットアドレス（SBT発行先）</label>
+                    <input type="text" id="walletAddress" placeholder="0x..." value="0x37c49282b53401dae95d466c6b69b3721dc11620">
+                    <small>※ SBTは検証成功時に自動的にこのアドレスに発行されます</small>
+                </div>
+                <button class="btn-primary" onclick="generateVerificationQR()">📱 検証用QRコードを生成</button>
+
+                <div class="qr-result" id="company-qr-result" style="display: none;">
+                    <h4>✅ QRコード生成完了</h4>
+                    <p>応募者にこのQRコードを提示してください</p>
+                    <div class="qr-display">
+                        <img id="company-qr" src="" alt="検証用QRコード">
+                    </div>
+                    <div class="instructions-box">
+                        <strong>応募者への指示：</strong>
+                        <ol>
+                            <li>Microsoft Authenticatorアプリを開く</li>
+                            <li>上記のQRコードをスキャン</li>
+                            <li>保存されている資格情報を選択</li>
+                            <li>「送信」をタップして資格を提示</li>
+                        </ol>
+                    </div>
+                    <div class="success-box">
+                        <strong>🎊 検証成功時の処理：</strong>
+                        <ul>
+                            <li>資格情報の真正性を自動検証</li>
+                            <li>Polygon Amoyブロックチェーン上にSoulbound Tokenを発行</li>
+                            <li>トランザクションハッシュを記録</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status (always visible) -->
+        <div class="system-status">
+            <h3>🖥️ システム状態</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">バックエンドAPI:</span>
+                    <span class="status-indicator" id="backend-status">確認中...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">ミントサービス:</span>
+                    <span class="status-indicator" id="mint-status">確認中...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="activity-section">
+            <h3>📊 アクティビティログ</h3>
+            <div id="activity-log" class="activity-log">
+                <p class="empty-state">アクティビティはまだありません</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 マイクロクレデンシャル発行・検証システム (Powered by Microsoft Entra Verified ID + Blockchain)</p>
+            <p>
+                <a href="https://github.com/johnyamanaka/nft-poc" target="_blank">GitHub Repository</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

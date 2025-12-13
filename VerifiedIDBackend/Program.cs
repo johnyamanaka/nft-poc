@@ -47,6 +47,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// 検証状態を保存するためのメモリ内ストレージ
+var verificationStatuses = new Dictionary<string, VerificationStatus>();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -76,6 +79,14 @@ app.MapPost("/api/verify", async (
             request.WalletAddress,
             callbackUrl);
 
+        // 検証状態を初期化
+        verificationStatuses[response.RequestId] = new VerificationStatus
+        {
+            RequestId = response.RequestId,
+            Status = "pending",
+            WalletAddress = request.WalletAddress
+        };
+
         return Results.Ok(response);
     }
     catch (Exception ex)
@@ -102,9 +113,7 @@ app.MapPost("/api/issue", async (
             : $"{publicBaseUrl}/api/issuance-callback";
 
         var response = await verifiedIdService.CreateIssuanceRequestAsync(
-            request.FirstName,
-            request.LastName,
-            request.Email,
+            request,
             callbackUrl);
 
         return Results.Ok(response);
@@ -183,10 +192,36 @@ app.MapPost("/api/callback", async (CallbackPayload payload, HttpContext httpCon
                     {
                         var responseBody = await response.Content.ReadAsStringAsync();
                         app.Logger.LogInformation("SBT minted successfully: {Response}", responseBody);
+
+                        // トランザクションハッシュを抽出して検証状態を更新
+                        try
+                        {
+                            var mintResponse = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(responseBody);
+                            if (mintResponse.TryGetProperty("txHash", out var txHashElement))
+                            {
+                                var txHash = txHashElement.GetString();
+                                if (verificationStatuses.TryGetValue(payload.RequestId, out var status))
+                                {
+                                    status.Status = "verified";
+                                    status.TransactionHash = txHash;
+                                    status.VerifiedAt = DateTime.UtcNow;
+                                }
+                            }
+                        }
+                        catch (Exception parseEx)
+                        {
+                            app.Logger.LogError(parseEx, "Error parsing mint response");
+                        }
                     }
                     else
                     {
                         app.Logger.LogError("Failed to mint SBT. Status: {StatusCode}", response.StatusCode);
+
+                        // 検証状態を失敗に更新
+                        if (verificationStatuses.TryGetValue(payload.RequestId, out var status))
+                        {
+                            status.Status = "failed";
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -222,6 +257,17 @@ app.MapPost("/api/callback", async (CallbackPayload payload, HttpContext httpCon
 // GET /api/status - ヘルスチェック
 app.MapGet("/api/status", () => Results.Ok(new { status = "running", timestamp = DateTime.UtcNow }))
     .WithName("HealthCheck");
+
+// GET /api/verification-status/{requestId} - 検証状態を取得
+app.MapGet("/api/verification-status/{requestId}", (string requestId) =>
+{
+    if (verificationStatuses.TryGetValue(requestId, out var status))
+    {
+        return Results.Ok(status);
+    }
+    return Results.NotFound(new { message = "Verification request not found" });
+})
+.WithName("GetVerificationStatus");
 
 app.Run();
 

@@ -78,8 +78,13 @@
 
 ## 🛠️ 技術スタック
 
+### フロントエンド
+- **技術**: HTML5 / CSS3 / Vanilla JavaScript
+- **特徴**: フレームワーク不要、軽量、レスポンシブ
+- **ホスティング**: ローカル / GitHub Pages（無料）
+
 ### バックエンド（C#）
-- **フレームワーク**: ASP.NET Core 8.0 (Minimal API)
+- **フレームワーク**: ASP.NET Core 10.0 (Minimal API)
 - **認証**: Microsoft.Identity.Client (MSAL)
 - **HTTP通信**: System.Net.Http.Json
 - **設定管理**: Microsoft.Extensions.Configuration
@@ -221,7 +226,32 @@ go build -o sbtmint.exe
 
 サービスはポート8080で起動します。
 
-### 4. ngrokのセットアップ
+### 4. Webフロントエンドの起動（オプション）
+
+#### 4.1 ブラウザで直接開く
+```bash
+cd WebFrontend
+start index.html
+```
+
+#### 4.2 簡易Webサーバーで起動（推奨）
+```bash
+# Pythonを使用
+cd WebFrontend
+python -m http.server 8000
+
+# その後ブラウザで http://localhost:8000 を開く
+```
+
+**Webフロントエンドの機能**:
+- QRコードの自動生成・表示
+- サービス状態のリアルタイム監視
+- 操作履歴の表示
+- モダンでレスポンシブなUI
+
+詳細は `WebFrontend/README.md` を参照してください。
+
+### 5. ngrokのセットアップ
 
 #### 4.1 ngrokのダウンロードとインストール
 ```bash
@@ -479,6 +509,12 @@ NFTPoC/
 ├── .env                         # 環境変数（機密情報）※Gitに含まれない
 ├── .env.example                 # 環境変数テンプレート
 ├── .gitignore                   # Git除外設定
+│
+├── WebFrontend/                 # Webフロントエンド
+│   ├── index.html               # メインページ
+│   ├── styles.css               # スタイルシート
+│   ├── script.js                # JavaScript機能
+│   └── README.md                # フロントエンド説明書
 │
 ├── VerifiedIDBackend/           # C# バックエンド
 │   ├── Program.cs               # エントリーポイント、APIエンドポイント定義

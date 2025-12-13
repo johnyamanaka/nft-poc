@@ -1,0 +1,70 @@
+{
+  "locale": "ja-JP",
+  "card": {
+    "title": "マイクロクレデンシャル",
+    "issuedBy": "○○大学",
+    "backgroundColor": "#667eea",
+    "textColor": "#ffffff",
+    "logo": {
+      "uri": "https://didcustomerplayground.blob.core.windows.net/public/VerifiedCredentialExpert_icon.png",
+      "description": "大学ロゴ"
+    },
+    "description": "デジタル資格証明書"
+  },
+  "consent": {
+    "title": "資格情報の受け取り",
+    "instructions": "この資格情報を受け取りますか？"
+  },
+  "claims": [
+    {
+      "claim": "vc.credentialSubject.firstName",
+      "label": "名",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.lastName",
+      "label": "姓",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.employeeId",
+      "label": "学生ID",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.courseName",
+      "label": "講座名",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.courseCode",
+      "label": "講座コード",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.completionDate",
+      "label": "修了日",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.grade",
+      "label": "成績",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.credits",
+      "label": "単位数",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.issuerName",
+      "label": "発行機関",
+      "type": "String"
+    },
+    {
+      "claim": "vc.credentialSubject.issuerDepartment",
+      "label": "学部・部署",
+      "type": "String"
+    }
+  ]
+}

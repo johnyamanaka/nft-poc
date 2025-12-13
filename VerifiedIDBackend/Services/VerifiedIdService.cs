@@ -10,7 +10,7 @@ namespace VerifiedIDBackend.Services;
 public interface IVerifiedIdService
 {
     Task<PresentationResponse> CreatePresentationRequestAsync(string walletAddress, string callbackUrl);
-    Task<IssuanceResponse> CreateIssuanceRequestAsync(string firstName, string lastName, string email, string callbackUrl);
+    Task<IssuanceResponse> CreateIssuanceRequestAsync(IssuanceRequest request, string callbackUrl);
 }
 
 public class VerifiedIdService : IVerifiedIdService
@@ -115,12 +115,36 @@ public class VerifiedIdService : IVerifiedIdService
         }
     }
 
-    public async Task<IssuanceResponse> CreateIssuanceRequestAsync(string firstName, string lastName, string email, string callbackUrl)
+    public async Task<IssuanceResponse> CreateIssuanceRequestAsync(IssuanceRequest request, string callbackUrl)
     {
         try
         {
             // アクセストークンの取得
             var accessToken = await GetAccessTokenAsync();
+
+            // クレームの構築（空の値は含めない）
+            var claims = new Dictionary<string, string>
+            {
+                { "firstName", request.FirstName },
+                { "lastName", request.LastName },
+                { "employeeId", request.Email }
+            };
+
+            // 講座情報を追加（値がある場合のみ）
+            if (!string.IsNullOrWhiteSpace(request.CourseName))
+                claims["courseName"] = request.CourseName;
+            if (!string.IsNullOrWhiteSpace(request.CourseCode))
+                claims["courseCode"] = request.CourseCode;
+            if (!string.IsNullOrWhiteSpace(request.CompletionDate))
+                claims["completionDate"] = request.CompletionDate;
+            if (!string.IsNullOrWhiteSpace(request.Grade))
+                claims["grade"] = request.Grade;
+            if (!string.IsNullOrWhiteSpace(request.Credits))
+                claims["credits"] = request.Credits;
+            if (!string.IsNullOrWhiteSpace(request.IssuerName))
+                claims["issuerName"] = request.IssuerName;
+            if (!string.IsNullOrWhiteSpace(request.IssuerDepartment))
+                claims["issuerDepartment"] = request.IssuerDepartment;
 
             // 発行リクエストの構築
             var requestPayload = new
@@ -129,12 +153,12 @@ public class VerifiedIdService : IVerifiedIdService
                 authority = _verifiedIdOptions.Authority,
                 registration = new
                 {
-                    clientName = "VerifiedID SBT PoC"
+                    clientName = "マイクロクレデンシャル発行システム"
                 },
                 callback = new
                 {
                     url = callbackUrl,
-                    state = email,
+                    state = request.Email,
                     headers = new Dictionary<string, string>
                     {
                         { "api-key", "poc-issuance-key" }
@@ -142,16 +166,13 @@ public class VerifiedIdService : IVerifiedIdService
                 },
                 type = _verifiedIdOptions.CredentialType,
                 manifest = _verifiedIdOptions.ManifestUrl,
-                claims = new
-                {
-                    firstName = firstName,
-                    lastName = lastName,
-                    employeeId = email
-                }
+                claims = claims
             };
 
             // Verified ID APIへのリクエスト
             var jsonContent = JsonSerializer.Serialize(requestPayload);
+            _logger.LogInformation("Issuance request payload: {Payload}", jsonContent);
+
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, _verifiedIdOptions.ApiEndpoint)
             {
                 Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
