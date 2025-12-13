@@ -355,7 +355,7 @@
                         <img id="company-qr" src="" alt="検証用QRコード">
                     </div>
                     <div class="instructions-box">
-                        <strong>応募者への指示：</strong>
+                        <strong>📱 QRコードでの提示：</strong>
                         <ol>
                             <li>Microsoft Authenticatorアプリを開く</li>
                             <li>上記のQRコードをスキャン</li>
@@ -363,6 +363,31 @@
                             <li>「送信」をタップして資格を提示</li>
                         </ol>
                     </div>
+
+                    <div class="highlight-box" id="verification-link-box" style="display: none;">
+                        <strong>🔗 オンラインで共有（QRコード不要）</strong>
+                        <p style="margin-top: 10px; margin-bottom: 10px;">
+                            リモート面接やオンライン応募の場合、以下のリンクを応募者に送信してください：
+                        </p>
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <input type="text" id="verification-url-input" readonly
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9em; font-family: monospace;">
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                            <button onclick="copyVerificationLink()"
+                                    style="flex: 1; min-width: 200px; padding: 12px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                📋 リンクをコピー
+                            </button>
+                            <button onclick="sendVerificationEmail()"
+                                    style="flex: 1; min-width: 200px; padding: 12px 20px; background: #4ecdc4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                📧 メールで送信
+                            </button>
+                        </div>
+                        <p style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                            💡 応募者がリンクをクリックすると、スマートフォンの場合は自動的にAuthenticatorアプリが起動します
+                        </p>
+                    </div>
+
                     <div class="success-box">
                         <strong>🎊 検証成功時の処理：</strong>
                         <ul>

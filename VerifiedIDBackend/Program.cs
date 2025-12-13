@@ -87,7 +87,17 @@ app.MapPost("/api/verify", async (
             WalletAddress = request.WalletAddress
         };
 
-        return Results.Ok(response);
+        // 検証リクエストURLを生成（ディープリンク用）
+        var verificationUrl = response.Url; // Verified IDから返されるURL
+
+        return Results.Ok(new
+        {
+            response.RequestId,
+            response.Url,
+            response.Expiry,
+            QrCode = response.QrCode,
+            VerificationUrl = verificationUrl // 追加：ディープリンク用URL
+        });
     }
     catch (Exception ex)
     {

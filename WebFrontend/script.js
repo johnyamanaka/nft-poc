@@ -206,8 +206,20 @@ async function generateVerificationQR() {
         // Show result
         document.getElementById('company-qr-result').style.display = 'block';
 
+        // Display verification link
+        if (data.verificationUrl) {
+            const linkBox = document.getElementById('verification-link-box');
+            const urlInput = document.getElementById('verification-url-input');
+            urlInput.value = data.verificationUrl;
+            linkBox.style.display = 'block';
+
+            // Store URL globally for copy/email functions
+            window.currentVerificationUrl = data.verificationUrl;
+        }
+
         addActivity('✅ 検証用QRコード生成完了');
         addActivity(`📝 SBT発行先: ${walletAddress}`);
+        addActivity('🔗 オンライン共有用リンクも生成されました');
         console.log('✅ Verification QR code generated for company');
 
         // 検証状態をポーリング
@@ -290,6 +302,61 @@ function displayTransactionLink(txHash, walletAddress) {
     `;
 
     resultDiv.insertAdjacentHTML('beforeend', txLinkHtml);
+}
+
+// Copy verification link to clipboard
+function copyVerificationLink() {
+    const url = window.currentVerificationUrl;
+    if (!url) {
+        alert('エラー: リンクが見つかりません');
+        return;
+    }
+
+    navigator.clipboard.writeText(url).then(() => {
+        alert('✅ リンクをクリップボードにコピーしました！\n\n応募者に送信してください。');
+        addActivity('📋 検証リンクをコピーしました');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        // Fallback: select the input
+        const urlInput = document.getElementById('verification-url-input');
+        urlInput.select();
+        alert('リンクを選択しました。Ctrl+C（Mac: Cmd+C）でコピーしてください。');
+    });
+}
+
+// Send verification link via email
+function sendVerificationEmail() {
+    const url = window.currentVerificationUrl;
+    if (!url) {
+        alert('エラー: リンクが見つかりません');
+        return;
+    }
+
+    const subject = encodeURIComponent('【資格検証】マイクロクレデンシャルの提示をお願いします');
+    const body = encodeURIComponent(`
+お世話になっております。
+
+マイクロクレデンシャル（デジタル資格証明書）の提示をお願いいたします。
+
+以下のリンクをクリックして、保持している資格情報を提示してください：
+
+${url}
+
+【提示方法】
+1. 上記のリンクをクリック
+2. Microsoft Authenticatorアプリが自動的に起動します
+3. 提示する資格情報を選択
+4. 「送信」をタップして提示完了
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+
+よろしくお願いいたします。
+    `.trim());
+
+    const mailto = `mailto:?subject=${subject}&body=${body}`;
+    window.location.href = mailto;
+
+    addActivity('📧 メールアプリを起動しました');
 }
 
 // Add activity to log

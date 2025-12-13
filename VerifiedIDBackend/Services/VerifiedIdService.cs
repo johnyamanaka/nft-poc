@@ -96,6 +96,8 @@ public class VerifiedIdService : IVerifiedIdService
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation("Presentation response: {Response}", responseContent);
+
             var presentationResponse = JsonSerializer.Deserialize<PresentationResponse>(responseContent);
 
             if (presentationResponse == null)
@@ -103,8 +105,8 @@ public class VerifiedIdService : IVerifiedIdService
                 throw new InvalidOperationException("Failed to deserialize presentation response");
             }
 
-            _logger.LogInformation("Presentation request created successfully. RequestId: {RequestId}",
-                presentationResponse.RequestId);
+            _logger.LogInformation("Presentation request created successfully. RequestId: {RequestId}, URL: {Url}",
+                presentationResponse.RequestId, presentationResponse.Url);
 
             return presentationResponse;
         }
