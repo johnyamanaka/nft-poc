@@ -1,6 +1,5 @@
 // Configuration
-const API_BASE_URL = 'http://localhost:5062';
-const MINT_SERVICE_URL = 'http://localhost:8080';
+// API_BASE_URL and MINT_SERVICE_URL are defined in config.js
 
 // Activity log
 let activities = [];
