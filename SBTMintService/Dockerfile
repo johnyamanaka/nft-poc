@@ -17,8 +17,9 @@ RUN go install golang.org/dl/go1.24.11@latest && \
 # Copy source code
 COPY . .
 
-# Build the application using the downloaded toolchain
-RUN go1.24.11 build -o main .
+# Update go.mod for the new toolchain and build
+RUN go1.24.11 mod tidy && \
+    go1.24.11 build -o main .
 
 # Runtime stage
 FROM alpine:latest
