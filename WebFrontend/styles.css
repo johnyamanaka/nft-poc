@@ -673,6 +673,44 @@ footer a:hover {
     text-decoration: underline;
 }
 
+/* Wake Up Button */
+.btn-wake-up {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+}
+
+.btn-wake-up:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+}
+
+.btn-wake-up:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-wake-up.waking {
+    background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     header h1 {

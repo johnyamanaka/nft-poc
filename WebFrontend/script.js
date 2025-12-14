@@ -392,8 +392,93 @@ function updateActivityLog() {
     `).join('');
 }
 
+// Wake up backend services
+async function wakeUpServices() {
+    const btn = document.getElementById('wake-up-btn');
+
+    // Disable button and show waking state
+    btn.disabled = true;
+    btn.classList.add('waking');
+    btn.textContent = '⏳ 起動中...';
+
+    addActivity('🚀 バックエンドサービスを起動中...');
+
+    try {
+        // Wake up both services in parallel
+        const wakePromises = [
+            wakeUpService('backend', `${API_BASE_URL}/api/status`, 'バックエンドAPI'),
+            wakeUpService('mint', `${MINT_SERVICE_URL}/health`, 'ミントサービス')
+        ];
+
+        const results = await Promise.allSettled(wakePromises);
+
+        // Check results
+        const successCount = results.filter(r => r.status === 'fulfilled').length;
+
+        if (successCount === 2) {
+            addActivity('✅ すべてのサービスが起動しました');
+            btn.textContent = '✅ 起動完了';
+        } else if (successCount === 1) {
+            addActivity('⚠️ 一部のサービスの起動に失敗しました');
+            btn.textContent = '⚠️ 一部起動';
+        } else {
+            addActivity('❌ サービスの起動に失敗しました');
+            btn.textContent = '❌ 起動失敗';
+        }
+
+        // Re-check status immediately
+        setTimeout(checkServiceStatus, 1000);
+
+    } catch (error) {
+        console.error('Error waking up services:', error);
+        addActivity('❌ サービス起動中にエラーが発生しました');
+        btn.textContent = '❌ エラー';
+    } finally {
+        // Re-enable button after 3 seconds
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.classList.remove('waking');
+            btn.textContent = '🚀 バックエンドを起動';
+        }, 3000);
+    }
+}
+
+// Wake up a single service with retries
+async function wakeUpService(serviceName, url, displayName) {
+    const maxRetries = 6; // 最大6回 (約30秒)
+    const retryDelay = 5000; // 5秒ごと
+
+    addActivity(`⏳ ${displayName}を起動中...`);
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                mode: 'cors',
+                signal: AbortSignal.timeout(10000) // 10秒タイムアウト
+            });
+
+            if (response.ok) {
+                addActivity(`✅ ${displayName}が起動しました (${attempt}回目の試行)`);
+                return true;
+            }
+        } catch (error) {
+            console.log(`${displayName} wake up attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+            if (attempt < maxRetries) {
+                addActivity(`⏳ ${displayName}起動待機中... (${attempt}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+            }
+        }
+    }
+
+    addActivity(`❌ ${displayName}の起動がタイムアウトしました`);
+    throw new Error(`${displayName} failed to wake up after ${maxRetries} attempts`);
+}
+
 // Make functions available globally
 window.selectRole = selectRole;
 window.resetRole = resetRole;
 window.generateIssuanceQR = generateIssuanceQR;
 window.generateVerificationQR = generateVerificationQR;
+window.wakeUpServices = wakeUpServices;
