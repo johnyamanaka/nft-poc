@@ -10,11 +10,15 @@ ENV GOTOOLCHAIN=auto
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Download required Go toolchain
+RUN go install golang.org/dl/go1.24.11@latest && \
+    go1.24.11 download
+
 # Copy source code
 COPY . .
 
-# Build the application
-RUN GOTOOLCHAIN=auto CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+# Build the application using the downloaded toolchain
+RUN go1.24.11 build -o main .
 
 # Runtime stage
 FROM alpine:latest
