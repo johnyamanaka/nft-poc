@@ -1,9 +1,9 @@
 // 環境別設定
 const CONFIG = {
-    // 本番環境（GitHub Pages）
+    // 本番環境（GitHub Pages + Render）
     production: {
-        API_BASE_URL: 'https://nft-poc-backend.fly.dev',
-        MINT_SERVICE_URL: 'https://nft-poc-mint.fly.dev'
+        API_BASE_URL: 'https://nft-poc-backend.onrender.com',
+        MINT_SERVICE_URL: 'https://nft-poc-mint.onrender.com'
     },
     // 開発環境（ローカル）
     development: {
