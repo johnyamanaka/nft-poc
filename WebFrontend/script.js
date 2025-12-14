@@ -459,10 +459,28 @@ async function wakeUpService(serviceName, url, displayName) {
             });
 
             if (response.ok) {
+                // 成功！
                 addActivity(`✅ ${displayName}が起動しました (${attempt}回目の試行)`);
                 return true;
+            } else if (response.status === 502) {
+                // 502 Bad Gateway = サービス起動中
+                console.log(`${displayName} is waking up (502 Bad Gateway), attempt ${attempt}/${maxRetries}`);
+                if (attempt < maxRetries) {
+                    const remainingTime = Math.ceil((maxRetries - attempt) * retryDelay / 1000);
+                    addActivity(`⏳ ${displayName}起動中... (${attempt}/${maxRetries}) 残り最大${remainingTime}秒`);
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                }
+            } else {
+                // その他のHTTPエラー
+                console.log(`${displayName} returned status ${response.status}, attempt ${attempt}/${maxRetries}`);
+                if (attempt < maxRetries) {
+                    const remainingTime = Math.ceil((maxRetries - attempt) * retryDelay / 1000);
+                    addActivity(`⏳ ${displayName}起動待機中... (${attempt}/${maxRetries}) 残り最大${remainingTime}秒`);
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                }
             }
         } catch (error) {
+            // ネットワークエラーまたはタイムアウト
             console.log(`${displayName} wake up attempt ${attempt}/${maxRetries} failed:`, error.message);
 
             if (attempt < maxRetries) {
