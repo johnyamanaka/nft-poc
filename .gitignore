@@ -49,7 +49,7 @@ artifacts/
 *.dylib
 *.test
 *.out
-go.sum
+# go.sum is needed for reproducible builds - DO NOT ignore
 
 # OS files
 .DS_Store
