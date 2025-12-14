@@ -186,6 +186,7 @@ app.MapPost("/api/callback", async (CallbackPayload payload, HttpContext httpCon
                 try
                 {
                     using var httpClient = new HttpClient();
+                    var mintServiceUrl = Environment.GetEnvironmentVariable("MINT_SERVICE_URL") ?? "http://localhost:8080";
                     var mintRequest = new
                     {
                         walletAddress = payload.State
@@ -193,7 +194,7 @@ app.MapPost("/api/callback", async (CallbackPayload payload, HttpContext httpCon
                     var jsonContent = System.Text.Json.JsonSerializer.Serialize(mintRequest);
                     var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
-                    var response = await httpClient.PostAsync("http://localhost:8080/mint", content);
+                    var response = await httpClient.PostAsync($"{mintServiceUrl}/mint", content);
 
                     if (response.IsSuccessStatusCode)
                     {
