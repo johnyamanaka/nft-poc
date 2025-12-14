@@ -24,7 +24,7 @@ builder.Configuration["Blockchain:RpcUrl"] = Environment.GetEnvironmentVariable(
 builder.Configuration["App:PublicBaseUrl"] = Environment.GetEnvironmentVariable("PUBLIC_BASE_URL") ?? builder.Configuration["App:PublicBaseUrl"];
 
 // Add services to the container.
-builder.Services.AddOpenApi();
+// OpenAPI は .NET 8.0 では不要
 
 // Options pattern for configuration
 builder.Services.Configure<AzureAdOptions>(builder.Configuration.GetSection("AzureAd"));
@@ -51,10 +51,7 @@ var app = builder.Build();
 var verificationStatuses = new Dictionary<string, VerificationStatus>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// OpenAPI mapping removed for .NET 8.0 compatibility
 
 app.UseCors();
 
