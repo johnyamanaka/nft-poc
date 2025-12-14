@@ -67,3 +67,8 @@ ngrok
 # Logs
 *.log
 logs/
+
+# Test/temporary JSON files
+issuance-latest.json
+test-issuance.json
+*-latest.json
