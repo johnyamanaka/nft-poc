@@ -445,8 +445,8 @@ async function wakeUpServices() {
 
 // Wake up a single service with retries
 async function wakeUpService(serviceName, url, displayName) {
-    const maxRetries = 6; // 最大6回 (約30秒)
-    const retryDelay = 5000; // 5秒ごと
+    const maxRetries = 12; // 最大12回 (約2分)
+    const retryDelay = 10000; // 10秒ごと
 
     addActivity(`⏳ ${displayName}を起動中...`);
 
@@ -455,7 +455,7 @@ async function wakeUpService(serviceName, url, displayName) {
             const response = await fetch(url, {
                 method: 'GET',
                 mode: 'cors',
-                signal: AbortSignal.timeout(10000) // 10秒タイムアウト
+                signal: AbortSignal.timeout(20000) // 20秒タイムアウト
             });
 
             if (response.ok) {
@@ -466,7 +466,8 @@ async function wakeUpService(serviceName, url, displayName) {
             console.log(`${displayName} wake up attempt ${attempt}/${maxRetries} failed:`, error.message);
 
             if (attempt < maxRetries) {
-                addActivity(`⏳ ${displayName}起動待機中... (${attempt}/${maxRetries})`);
+                const remainingTime = Math.ceil((maxRetries - attempt) * retryDelay / 1000);
+                addActivity(`⏳ ${displayName}起動待機中... (${attempt}/${maxRetries}) 残り最大${remainingTime}秒`);
                 await new Promise(resolve => setTimeout(resolve, retryDelay));
             }
         }
