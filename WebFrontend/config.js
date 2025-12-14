@@ -2,7 +2,7 @@
 const CONFIG = {
     // 本番環境（GitHub Pages）
     production: {
-        API_BASE_URL: 'https://nft-poc-backend.azurewebsites.net',
+        API_BASE_URL: 'https://nft-poc-backend.fly.dev',
         MINT_SERVICE_URL: 'https://nft-poc-mint.fly.dev'
     },
     // 開発環境（ローカル）
