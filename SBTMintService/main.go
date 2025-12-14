@@ -73,12 +73,34 @@ func main() {
 
 // healthHandler - ヘルスチェック
 func healthHandler(w http.ResponseWriter, r *http.Request) {
+	// CORSヘッダーを設定
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// OPTIONSリクエスト（プリフライト）の処理
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "running"})
 }
 
 // mintHandler - SBT Mintエンドポイント
 func mintHandler(w http.ResponseWriter, r *http.Request) {
+	// CORSヘッダーを設定
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// OPTIONSリクエスト（プリフライト）の処理
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
