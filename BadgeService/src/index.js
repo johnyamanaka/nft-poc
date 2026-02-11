@@ -7,6 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import { issueCredential } from './services/issuer.js';
 import { verifyCredential, extractCredentialInfo } from './services/verifier.js';
+import { initDatabase, saveBadge, getBadgesByEmail, getAllBadges, getBadgeById, logVerification, getStats } from './services/database.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,12 +17,14 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  const stats = await getStats();
   res.json({
     status: 'ok',
     service: 'badge-service',
     version: '1.0.0',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    database: stats
   });
 });
 
@@ -69,6 +72,12 @@ app.post('/api/badge/issue', async (req, res) => {
       credits
     });
 
+    // Save to database
+    const dbId = await saveBadge({ ...credential, credentialSubject: { ...credential.credentialSubject, email: recipientEmail } });
+    if (dbId) {
+      console.log(`Badge saved to database with ID: ${dbId}`);
+    }
+
     console.log(`Badge issued successfully: ${credential.id}`);
 
     res.json({
@@ -93,7 +102,7 @@ app.post('/api/badge/issue', async (req, res) => {
  */
 app.post('/api/badge/verify', async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, verifiedBy } = req.body;
 
     if (!credential) {
       return res.status(400).json({
@@ -109,6 +118,9 @@ app.post('/api/badge/verify', async (req, res) => {
 
     // Extract credential information
     const credentialInfo = extractCredentialInfo(credential);
+
+    // Log verification to database
+    await logVerification(credential.id, verificationResult.verified, verifiedBy);
 
     console.log(`Verification result: ${verificationResult.verified ? 'VALID' : 'INVALID'}`);
 
@@ -136,6 +148,107 @@ app.post('/api/badge/verify', async (req, res) => {
 });
 
 /**
+ * GET /api/badge/wallet/:email
+ * Get all badges for a student by email
+ */
+app.get('/api/badge/wallet/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email is required'
+      });
+    }
+
+    console.log(`Fetching badges for: ${email}`);
+
+    const badges = await getBadgesByEmail(email);
+
+    res.json({
+      success: true,
+      email,
+      count: badges.length,
+      badges
+    });
+
+  } catch (error) {
+    console.error('Error fetching wallet:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch badges',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/badge/issued
+ * Get all issued badges (for issuer dashboard)
+ */
+app.get('/api/badge/issued', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+
+    console.log(`Fetching issued badges (limit: ${limit})`);
+
+    const badges = await getAllBadges(limit);
+
+    res.json({
+      success: true,
+      count: badges.length,
+      badges
+    });
+
+  } catch (error) {
+    console.error('Error fetching issued badges:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch issued badges',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/badge/:id
+ * Get a specific badge by credential ID
+ */
+app.get('/api/badge/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Handle URL-encoded URN
+    const credentialId = decodeURIComponent(id);
+
+    console.log(`Fetching badge: ${credentialId}`);
+
+    const credential = await getBadgeById(credentialId);
+
+    if (!credential) {
+      return res.status(404).json({
+        success: false,
+        error: 'Badge not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      credential
+    });
+
+  } catch (error) {
+    console.error('Error fetching badge:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch badge',
+      details: error.message
+    });
+  }
+});
+
+/**
  * GET /api/badge/sample
  * Get a sample badge request structure for testing
  */
@@ -156,6 +269,9 @@ app.get('/api/badge/sample', (req, res) => {
     endpoints: {
       issue: 'POST /api/badge/issue',
       verify: 'POST /api/badge/verify',
+      wallet: 'GET /api/badge/wallet/:email',
+      issued: 'GET /api/badge/issued',
+      badge: 'GET /api/badge/:id',
       health: 'GET /health'
     }
   });
@@ -171,19 +287,29 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log('');
-  console.log('='.repeat(50));
-  console.log('  OpenBadges 3.0 Badge Service');
-  console.log('='.repeat(50));
-  console.log(`  Server running on http://localhost:${PORT}`);
-  console.log('');
-  console.log('  Endpoints:');
-  console.log(`    GET  /health          - Health check`);
-  console.log(`    POST /api/badge/issue - Issue a badge`);
-  console.log(`    POST /api/badge/verify - Verify a badge`);
-  console.log(`    GET  /api/badge/sample - Sample request`);
-  console.log('');
-  console.log('='.repeat(50));
-});
+// Initialize database and start server
+async function start() {
+  const dbConnected = await initDatabase();
+
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('='.repeat(50));
+    console.log('  OpenBadges 3.0 Badge Service');
+    console.log('='.repeat(50));
+    console.log(`  Server running on http://localhost:${PORT}`);
+    console.log(`  Database: ${dbConnected ? 'Connected' : 'Not configured'}`);
+    console.log('');
+    console.log('  Endpoints:');
+    console.log(`    GET  /health              - Health check`);
+    console.log(`    POST /api/badge/issue     - Issue a badge`);
+    console.log(`    POST /api/badge/verify    - Verify a badge`);
+    console.log(`    GET  /api/badge/wallet/:email - Get student badges`);
+    console.log(`    GET  /api/badge/issued    - Get all issued badges`);
+    console.log(`    GET  /api/badge/:id       - Get badge by ID`);
+    console.log(`    GET  /api/badge/sample    - Sample request`);
+    console.log('');
+    console.log('='.repeat(50));
+  });
+}
+
+start();

@@ -603,6 +603,17 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Issued Badges History -->
+            <div class="action-card" style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>📜 発行履歴</h3>
+                    <button class="btn-secondary" onclick="loadIssuedBadges()" style="padding: 8px 16px;">🔄 更新</button>
+                </div>
+                <div id="issued-badges-list">
+                    <p style="text-align: center; color: #666; padding: 20px;">「更新」ボタンをクリックして発行履歴を読み込み</p>
+                </div>
+            </div>
         </div>
 
         <!-- Student View (OpenBadges Mode) -->
@@ -613,94 +624,39 @@
             </div>
 
             <div class="info-box student-info">
-                <h3>📋 OpenBadges 3.0 バッジ管理</h3>
+                <h3>📋 OpenBadges 3.0 バッジウォレット</h3>
                 <p>大学から発行されたOpenBadgesバッジを管理し、企業に提示します。</p>
                 <ul>
-                    <li>✅ JSONファイルとしてバッジを受け取り</li>
-                    <li>✅ ローカルまたはクラウドに保存</li>
+                    <li>✅ メールアドレスで取得済みバッジを確認</li>
+                    <li>✅ クラウドに安全に保存</li>
                     <li>✅ 必要に応じて企業に提出</li>
-                    <li>✅ LinkedInなどで共有可能</li>
+                    <li>✅ JSONダウンロードで持ち出し可能</li>
                 </ul>
             </div>
 
-            <div class="two-column-layout">
-                <div class="column">
-                    <div class="step-card">
-                        <div class="step-header">
-                            <span class="step-badge">ステップ 1</span>
-                            <h3>📥 バッジの受け取り</h3>
-                        </div>
-                        <div class="step-content">
-                            <div class="visual-guide">
-                                <div class="guide-item">
-                                    <div class="guide-icon">🏛️</div>
-                                    <p>大学からJSONファイル<br>またはリンクを受け取る</p>
-                                </div>
-                                <div class="guide-arrow">↓</div>
-                                <div class="guide-item">
-                                    <div class="guide-icon">💾</div>
-                                    <p>ファイルを安全な場所に<br>保存</p>
-                                </div>
-                                <div class="guide-arrow">↓</div>
-                                <div class="guide-item">
-                                    <div class="guide-icon">✅</div>
-                                    <p>内容を確認して<br>保管完了</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="column">
-                    <div class="step-card">
-                        <div class="step-header">
-                            <span class="step-badge">ステップ 2</span>
-                            <h3>🏢 企業への提示</h3>
-                        </div>
-                        <div class="step-content">
-                            <div class="visual-guide">
-                                <div class="guide-item">
-                                    <div class="guide-icon">📎</div>
-                                    <p>履歴書やメールに<br>バッジを添付</p>
-                                </div>
-                                <div class="guide-arrow">↓</div>
-                                <div class="guide-item">
-                                    <div class="guide-icon">🏢</div>
-                                    <p>企業がバッジを<br>検証</p>
-                                </div>
-                                <div class="guide-arrow">↓</div>
-                                <div class="guide-item">
-                                    <div class="guide-icon">✅</div>
-                                    <p>資格が確認され<br>採用プロセスへ</p>
-                                </div>
-                            </div>
-                        </div>
+            <div class="action-card">
+                <h3>🔍 バッジを取得</h3>
+                <div class="form-group">
+                    <label>メールアドレス <span class="required">*</span></label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="email" id="walletEmail" placeholder="例: taro.yamada@example.com" style="flex: 1;">
+                        <button class="btn-primary" onclick="loadWallet()" style="white-space: nowrap;">🔍 バッジを検索</button>
                     </div>
                 </div>
             </div>
 
-            <div class="action-card">
-                <h3>🏅 取得済みバッジ（サンプル）</h3>
-
-                <div class="badge-display" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                        <div class="badge-icon" style="background: white; flex-shrink: 0;">🎓</div>
-                        <div style="flex: 1; min-width: 200px;">
-                            <h4 style="margin: 0 0 5px 0;">データサイエンス基礎</h4>
-                            <p style="margin: 0; opacity: 0.9;">○○大学 | 2025-01-15発行</p>
-                            <p style="margin: 5px 0 0 0; font-size: 0.85rem; opacity: 0.8;">成績: 優秀 | 2単位</p>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-secondary" style="background: white; border: none;">👁️ 詳細</button>
-                            <button class="btn-secondary" style="background: white; border: none;">📤 共有</button>
-                        </div>
-                    </div>
+            <div class="action-card" id="wallet-results" style="display: none;">
+                <h3>🏅 取得済みバッジ <span id="wallet-count" style="font-size: 0.9rem; opacity: 0.7;"></span></h3>
+                <div id="wallet-badges"></div>
+                <div id="wallet-empty" style="display: none; text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📭</div>
+                    <p>このメールアドレスで発行されたバッジはありません</p>
                 </div>
+            </div>
 
-                <div class="highlight-box">
-                    <strong>💡 ヒント：LinkedInで共有</strong>
-                    <p>OpenBadges 3.0形式のバッジはLinkedInのプロフィールに追加できます。「資格」セクションに情報を入力することで、取得した資格をアピールできます。</p>
-                </div>
+            <div class="highlight-box" style="margin-top: 20px;">
+                <strong>💡 ヒント：LinkedInで共有</strong>
+                <p>OpenBadges 3.0形式のバッジはLinkedInのプロフィールに追加できます。「資格」セクションに情報を入力することで、取得した資格をアピールできます。</p>
             </div>
         </div>
 
@@ -1101,9 +1057,11 @@
             const statusIndicator = document.querySelector('.status-indicator.online');
             try {
                 const response = await fetch(`${BADGE_SERVICE_URL}/health`);
+                const data = await response.json();
                 if (response.ok) {
                     if (statusIndicator) {
-                        statusIndicator.textContent = 'オンライン';
+                        const dbStatus = data.database?.dbConnected ? 'DB接続済' : 'DBなし';
+                        statusIndicator.textContent = `オンライン (${dbStatus})`;
                         statusIndicator.classList.add('online');
                     }
                 } else {
@@ -1116,6 +1074,113 @@
                     statusIndicator.style.background = '#f8d7da';
                     statusIndicator.style.color = '#721c24';
                 }
+            }
+        }
+
+        // Load student wallet by email
+        async function loadWallet() {
+            const email = document.getElementById('walletEmail').value.trim();
+            if (!email) {
+                alert('メールアドレスを入力してください');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('wallet-results');
+            const badgesDiv = document.getElementById('wallet-badges');
+            const emptyDiv = document.getElementById('wallet-empty');
+            const countSpan = document.getElementById('wallet-count');
+
+            resultsDiv.style.display = 'block';
+            badgesDiv.innerHTML = '<p style="text-align: center; padding: 20px;">読み込み中...</p>';
+            emptyDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${BADGE_SERVICE_URL}/api/badge/wallet/${encodeURIComponent(email)}`);
+                const data = await response.json();
+
+                if (data.badges && data.badges.length > 0) {
+                    countSpan.textContent = `(${data.count}件)`;
+                    badgesDiv.innerHTML = data.badges.map(badge => `
+                        <div class="badge-display" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                                <div class="badge-icon" style="background: white; flex-shrink: 0;">🎓</div>
+                                <div style="flex: 1; min-width: 200px;">
+                                    <h4 style="margin: 0 0 5px 0;">${badge.achievement_name}</h4>
+                                    <p style="margin: 0; opacity: 0.9;">${badge.issuer_name} | ${new Date(badge.issued_at).toLocaleDateString('ja-JP')}</p>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn-secondary" style="background: white; border: none;" onclick='showBadgeDetail(${JSON.stringify(badge.credential).replace(/'/g, "&#39;")})'>👁️ 詳細</button>
+                                    <button class="btn-secondary" style="background: white; border: none;" onclick='downloadWalletBadge(${JSON.stringify(badge.credential).replace(/'/g, "&#39;")}, "${badge.recipient_name}")'>📥 保存</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    countSpan.textContent = '(0件)';
+                    badgesDiv.innerHTML = '';
+                    emptyDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Wallet load error:', error);
+                badgesDiv.innerHTML = `<p style="color: #dc3545; text-align: center; padding: 20px;">エラー: ${error.message}</p>`;
+            }
+        }
+
+        // Show badge detail in modal/alert
+        function showBadgeDetail(credential) {
+            alert(JSON.stringify(credential, null, 2));
+        }
+
+        // Download badge from wallet
+        function downloadWalletBadge(credential, recipientName) {
+            const blob = new Blob([JSON.stringify(credential, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `badge-${recipientName.replace(/\s/g, '-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Load issued badges (for university view)
+        async function loadIssuedBadges() {
+            const listDiv = document.getElementById('issued-badges-list');
+            listDiv.innerHTML = '<p style="text-align: center; padding: 20px;">読み込み中...</p>';
+
+            try {
+                const response = await fetch(`${BADGE_SERVICE_URL}/api/badge/issued`);
+                const data = await response.json();
+
+                if (data.badges && data.badges.length > 0) {
+                    listDiv.innerHTML = `
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                    <th style="padding: 12px; text-align: left;">受取人</th>
+                                    <th style="padding: 12px; text-align: left;">バッジ名</th>
+                                    <th style="padding: 12px; text-align: left;">発行機関</th>
+                                    <th style="padding: 12px; text-align: left;">発行日</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.badges.map(badge => `
+                                    <tr style="border-bottom: 1px solid #dee2e6;">
+                                        <td style="padding: 12px;">${badge.recipient_name}</td>
+                                        <td style="padding: 12px;">${badge.achievement_name}</td>
+                                        <td style="padding: 12px;">${badge.issuer_name}</td>
+                                        <td style="padding: 12px;">${new Date(badge.issued_at).toLocaleDateString('ja-JP')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <p style="text-align: right; color: #666; font-size: 0.85rem; margin-top: 10px;">合計 ${data.count} 件</p>
+                    `;
+                } else {
+                    listDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">発行履歴がありません</p>';
+                }
+            } catch (error) {
+                console.error('Load issued badges error:', error);
+                listDiv.innerHTML = `<p style="color: #dc3545; text-align: center; padding: 20px;">エラー: ${error.message}</p>`;
             }
         }
 
