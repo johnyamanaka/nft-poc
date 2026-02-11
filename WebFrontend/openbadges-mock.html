@@ -636,13 +636,13 @@
 
             <div class="action-card">
                 <h3>🔍 バッジを取得</h3>
+                <p style="color: #666; margin-bottom: 15px;">大学から発行されたバッジを、登録したメールアドレスで検索できます。</p>
                 <div class="form-group">
                     <label>メールアドレス <span class="required">*</span></label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="email" id="walletEmail" placeholder="例: taro.yamada@example.com"
-                               style="flex: 1; padding: 14px 16px; font-size: 1.1rem; border: 2px solid #e0e0e0; border-radius: 8px; min-width: 0;">
-                        <button class="btn-primary" onclick="loadWallet()" style="white-space: nowrap; padding: 14px 24px;">🔍 バッジを検索</button>
-                    </div>
+                    <input type="email" id="walletEmail" placeholder="例: taro.yamada@example.com"
+                           style="width: 100%; padding: 16px 20px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 10px; margin-bottom: 15px; transition: border-color 0.3s;"
+                           onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+                    <button class="btn-primary" onclick="loadWallet()" style="width: 100%; padding: 14px 20px; font-size: 1rem;">🔍 バッジを検索</button>
                 </div>
             </div>
 
