@@ -1,0 +1,24 @@
+{
+  "name": "badge-service",
+  "version": "1.0.0",
+  "description": "OpenBadges 3.0 issuance and verification service",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "generate-keys": "node scripts/generate-keys.js"
+  },
+  "dependencies": {
+    "@digitalbazaar/ed25519-signature-2020": "^5.4.0",
+    "@digitalbazaar/ed25519-verification-key-2020": "^4.1.0",
+    "@digitalbazaar/vc": "^7.0.0",
+    "@digitalcredentials/open-badges-context": "^3.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

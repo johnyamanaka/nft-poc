@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenBadges 3.0 マイクロクレデンシャル発行システム</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <style>
+        /* Mode Switcher */
+        .mode-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin: 20px 0;
+            background: #f0f0f0;
+            border-radius: 50px;
+            padding: 5px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #666;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
+        /* Badge Display */
+        .badge-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            margin: 20px 0;
+        }
+
+        .badge-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .badge-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .badge-icon {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .badge-title {
+            flex: 1;
+        }
+
+        .badge-title h4 {
+            margin: 0 0 5px 0;
+            font-size: 1.3rem;
+        }
+
+        .badge-title p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .badge-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .badge-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .badge-detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge-detail-label {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .badge-detail-value {
+            font-weight: 600;
+        }
+
+        /* JSON Display */
+        .json-display {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .json-display pre {
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .json-display .json-key {
+            color: #9cdcfe;
+        }
+
+        .json-display .json-string {
+            color: #ce9178;
+        }
+
+        .json-display .json-number {
+            color: #b5cea8;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Verification Result */
+        .verification-result {
+            margin-top: 20px;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .verification-result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .verification-result.failed {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .verification-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .verification-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .verification-result.success .verification-title {
+            color: #155724;
+        }
+
+        .verification-result.failed .verification-title {
+            color: #721c24;
+        }
+
+        /* File Upload Area */
+        .file-upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .file-upload-area:hover {
+            background: #eef1ff;
+            border-color: #764ba2;
+        }
+
+        .file-upload-area.dragover {
+            background: #e3e8ff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+        }
+
+        .upload-text strong {
+            color: #667eea;
+        }
+
+        /* Tabs */
+        .tab-container {
+            margin: 20px 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* OpenBadges Logo */
+        .ob-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Comparison Table */
+        .comparison-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .comparison-note h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .comparison-note p {
+            color: #856404;
+            margin: 0;
+        }
+
+        /* Mode indicator in header */
+        .mode-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 マイクロクレデンシャル発行・検証システム</h1>
+            <p class="subtitle">OpenBadges 3.0 + Verifiable Credentials</p>
+            <div class="mode-indicator">
+                <span class="ob-logo">🏅 OpenBadges 3.0</span>
+            </div>
+        </header>
+
+        <!-- Mode Switcher -->
+        <div style="padding: 20px 40px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+            <div class="mode-switcher">
+                <button class="mode-btn" onclick="switchMode('msvc')">
+                    🔐 Microsoft VC
+                </button>
+                <button class="mode-btn active" onclick="switchMode('openbadges')">
+                    🏅 OpenBadges 3.0
+                </button>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">
+                ※ 発行方式を切り替えられます
+            </p>
+        </div>
+
+        <!-- Role Selection -->
+        <div class="role-selector" id="role-selector">
+            <h2>あなたの役割を選択してください</h2>
+            <div class="role-cards">
+                <div class="role-card" onclick="selectRole('university')">
+                    <div class="role-icon">🏛️</div>
+                    <h3>大学</h3>
+                    <p>バッジを発行</p>
+                </div>
+                <div class="role-card" onclick="selectRole('student')">
+                    <div class="role-icon">👨‍🎓</div>
+                    <h3>学生</h3>
+                    <p>バッジを受け取る・管理</p>
+                </div>
+                <div class="role-card" onclick="selectRole('company')">
+                    <div class="role-icon">🏢</div>
+                    <h3>企業</h3>
+                    <p>バッジを検証</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- University View (OpenBadges Mode) -->
+        <div class="role-view" id="university-view" style="display: none;">
+            <div class="role-header">
+                <div class="role-badge">🏛️ 大学管理者 <span class="ob-logo" style="margin-left: 10px;">🏅 OpenBadges</span></div>
+                <button class="btn-back" onclick="resetRole()">← 役割選択に戻る</button>
+            </div>
+
+            <div class="comparison-note">
+                <h4>🔄 OpenBadges 3.0 モード</h4>
+                <p>Microsoft Authenticatorの代わりに、標準的なOpenBadges 3.0形式でバッジを発行します。バッジはJSON形式でダウンロードでき、様々なプラットフォームで共有・検証できます。</p>
+            </div>
+
+            <div class="info-box university-info">
+                <h3>📋 OpenBadges 3.0での発行</h3>
+                <p>OpenBadges 3.0は、W3C Verifiable Credentials標準に準拠したデジタルバッジ形式です。</p>
+                <ul>
+                    <li>✅ 国際標準（1EdTech / W3C）に準拠</li>
+                    <li>✅ LinkedInなど多数のプラットフォームで共有可能</li>
+                    <li>✅ 暗号署名により改ざん防止</li>
+                    <li>✅ JSONファイルとしてダウンロード・共有</li>
+                </ul>
+            </div>
+
+            <div class="flow-steps-horizontal">
+                <div class="step active">
+                    <div class="step-num">1</div>
+                    <p>情報入力</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <p>バッジ発行</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <p>ダウンロード</p>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>🏅 バッジ発行</h3>
+
+                <div class="form-section">
+                    <h4>👤 受取人情報</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>氏名 <span class="required">*</span></label>
+                            <input type="text" id="recipientName" placeholder="例: 山田 太郎" value="山田 太郎" required>
+                        </div>
+                        <div class="form-group">
+                            <label>メールアドレス <span class="required">*</span></label>
+                            <input type="email" id="recipientEmail" placeholder="例: taro.yamada@example.com" value="taro.yamada@example.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>🏅 バッジ・資格情報</h4>
+                    <div class="form-group">
+                        <label>バッジ名（達成内容） <span class="required">*</span></label>
+                        <input type="text" id="achievementName" placeholder="例: データサイエンス基礎" value="データサイエンス基礎" required>
+                    </div>
+                    <div class="form-group">
+                        <label>説明</label>
+                        <textarea id="achievementDescription" rows="3" placeholder="バッジの説明..." style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;">データサイエンスの基礎的な知識とスキルを習得し、実践的な分析ができることを証明します。</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>講座名</label>
+                            <input type="text" id="courseName" placeholder="例: データサイエンス入門" value="データサイエンス入門">
+                        </div>
+                        <div class="form-group">
+                            <label>講座コード</label>
+                            <input type="text" id="courseCode" placeholder="例: DS101" value="DS101">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>修了日 <span class="required">*</span></label>
+                            <input type="date" id="completionDate" value="2025-01-15" required>
+                        </div>
+                        <div class="form-group">
+                            <label>成績</label>
+                            <select id="grade">
+                                <option value="">選択してください</option>
+                                <option value="優秀" selected>優秀</option>
+                                <option value="優">優</option>
+                                <option value="良">良</option>
+                                <option value="可">可</option>
+                                <option value="合格">合格</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>単位数</label>
+                            <input type="number" id="credits" placeholder="例: 2" value="2" min="0" max="10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>🏛️ 発行機関情報</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>発行機関名 <span class="required">*</span></label>
+                            <input type="text" id="issuerName" placeholder="例: ○○大学" value="○○大学" required>
+                        </div>
+                        <div class="form-group">
+                            <label>学部・部署</label>
+                            <input type="text" id="issuerDepartment" placeholder="例: 工学部" value="工学部">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="issueBadge()">🏅 OpenBadgeを発行</button>
+
+                <!-- Issue Result -->
+                <div id="badge-result" style="display: none;">
+                    <div class="qr-result" style="border-color: #667eea;">
+                        <h4 style="color: #667eea;">✅ バッジ発行完了</h4>
+                        <p>OpenBadges 3.0形式のバッジが発行されました</p>
+
+                        <!-- Badge Visual -->
+                        <div class="badge-display">
+                            <div class="badge-card">
+                                <div class="badge-header">
+                                    <div class="badge-icon">🎓</div>
+                                    <div class="badge-title">
+                                        <h4 id="badge-display-name">データサイエンス基礎</h4>
+                                        <p id="badge-display-issuer">○○大学</p>
+                                    </div>
+                                </div>
+                                <div class="badge-details">
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">受取人</span>
+                                        <span class="badge-detail-value" id="badge-display-recipient">山田 太郎</span>
+                                    </div>
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">修了日</span>
+                                        <span class="badge-detail-value" id="badge-display-date">2025-01-15</span>
+                                    </div>
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">成績</span>
+                                        <span class="badge-detail-value" id="badge-display-grade">優秀</span>
+                                    </div>
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">単位</span>
+                                        <span class="badge-detail-value" id="badge-display-credits">2単位</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabs for JSON view -->
+                        <div class="tab-container">
+                            <div class="tab-buttons">
+                                <button class="tab-btn active" onclick="showTab('simple')">シンプル表示</button>
+                                <button class="tab-btn" onclick="showTab('json')">JSON表示</button>
+                            </div>
+
+                            <div class="tab-content active" id="tab-simple">
+                                <div class="instructions-box">
+                                    <strong>📥 バッジの共有方法：</strong>
+                                    <ol>
+                                        <li>「JSONをダウンロード」ボタンでバッジファイルを保存</li>
+                                        <li>メールやクラウドストレージで学生に送付</li>
+                                        <li>学生はファイルを保管し、必要時に企業へ提出</li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="tab-json">
+                                <div class="json-display">
+                                    <pre id="json-output">{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://purl.imsglobal.org/spec/ob/v3p0/context-3.0.3.json"
+  ],
+  "id": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "type": ["VerifiableCredential", "OpenBadgeCredential"],
+  "issuer": {
+    "id": "did:web:example.university.edu",
+    "type": ["Profile"],
+    "name": "○○大学"
+  },
+  "validFrom": "2025-01-15T00:00:00Z",
+  "name": "データサイエンス基礎",
+  "credentialSubject": {
+    "type": ["AchievementSubject"],
+    "name": "山田 太郎",
+    "achievement": {
+      "type": ["Achievement"],
+      "name": "データサイエンス基礎",
+      "description": "データサイエンスの基礎的な知識とスキルを習得...",
+      "criteria": {
+        "narrative": "データサイエンス入門を修了し..."
+      }
+    },
+    "result": [
+      { "type": ["Result"], "value": "優秀" },
+      { "type": ["Result"], "value": "2" }
+    ]
+  },
+  "proof": {
+    "type": "Ed25519Signature2020",
+    "created": "2025-01-15T12:00:00Z",
+    "verificationMethod": "did:web:example.university.edu#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "z3FXQjecWufY46..."
+  }
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="downloadBadge()">📥 JSONをダウンロード</button>
+                            <button class="btn-secondary" onclick="copyBadgeJson()">📋 JSONをコピー</button>
+                            <button class="btn-secondary" onclick="emailBadge()">📧 メールで送信</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student View (OpenBadges Mode) -->
+        <div class="role-view" id="student-view" style="display: none;">
+            <div class="role-header">
+                <div class="role-badge">👨‍🎓 学生 <span class="ob-logo" style="margin-left: 10px;">🏅 OpenBadges</span></div>
+                <button class="btn-back" onclick="resetRole()">← 役割選択に戻る</button>
+            </div>
+
+            <div class="info-box student-info">
+                <h3>📋 OpenBadges 3.0 バッジ管理</h3>
+                <p>大学から発行されたOpenBadgesバッジを管理し、企業に提示します。</p>
+                <ul>
+                    <li>✅ JSONファイルとしてバッジを受け取り</li>
+                    <li>✅ ローカルまたはクラウドに保存</li>
+                    <li>✅ 必要に応じて企業に提出</li>
+                    <li>✅ LinkedInなどで共有可能</li>
+                </ul>
+            </div>
+
+            <div class="two-column-layout">
+                <div class="column">
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-badge">ステップ 1</span>
+                            <h3>📥 バッジの受け取り</h3>
+                        </div>
+                        <div class="step-content">
+                            <div class="visual-guide">
+                                <div class="guide-item">
+                                    <div class="guide-icon">🏛️</div>
+                                    <p>大学からJSONファイル<br>またはリンクを受け取る</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">💾</div>
+                                    <p>ファイルを安全な場所に<br>保存</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">✅</div>
+                                    <p>内容を確認して<br>保管完了</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-badge">ステップ 2</span>
+                            <h3>🏢 企業への提示</h3>
+                        </div>
+                        <div class="step-content">
+                            <div class="visual-guide">
+                                <div class="guide-item">
+                                    <div class="guide-icon">📎</div>
+                                    <p>履歴書やメールに<br>バッジを添付</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">🏢</div>
+                                    <p>企業がバッジを<br>検証</p>
+                                </div>
+                                <div class="guide-arrow">↓</div>
+                                <div class="guide-item">
+                                    <div class="guide-icon">✅</div>
+                                    <p>資格が確認され<br>採用プロセスへ</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>🏅 取得済みバッジ（サンプル）</h3>
+
+                <div class="badge-display" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                        <div class="badge-icon" style="background: white; flex-shrink: 0;">🎓</div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <h4 style="margin: 0 0 5px 0;">データサイエンス基礎</h4>
+                            <p style="margin: 0; opacity: 0.9;">○○大学 | 2025-01-15発行</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.85rem; opacity: 0.8;">成績: 優秀 | 2単位</p>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-secondary" style="background: white; border: none;">👁️ 詳細</button>
+                            <button class="btn-secondary" style="background: white; border: none;">📤 共有</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>💡 ヒント：LinkedInで共有</strong>
+                    <p>OpenBadges 3.0形式のバッジはLinkedInのプロフィールに追加できます。「資格」セクションに情報を入力することで、取得した資格をアピールできます。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company View (OpenBadges Mode) -->
+        <div class="role-view" id="company-view" style="display: none;">
+            <div class="role-header">
+                <div class="role-badge">🏢 企業採用担当者 <span class="ob-logo" style="margin-left: 10px;">🏅 OpenBadges</span></div>
+                <button class="btn-back" onclick="resetRole()">← 役割選択に戻る</button>
+            </div>
+
+            <div class="info-box company-info">
+                <h3>📋 OpenBadges 3.0 検証</h3>
+                <p>応募者から提出されたバッジの真正性を検証します。</p>
+                <ul>
+                    <li>✅ JSONファイルをアップロード</li>
+                    <li>✅ 発行者の署名を自動検証</li>
+                    <li>✅ 改ざんがないことを確認</li>
+                    <li>✅ 発行日・有効期限をチェック</li>
+                </ul>
+            </div>
+
+            <div class="flow-steps-horizontal">
+                <div class="step active">
+                    <div class="step-num">1</div>
+                    <p>バッジ受取</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <p>アップロード</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <p>署名検証</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <p>結果確認</p>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>✅ バッジ検証</h3>
+
+                <div class="file-upload-area" id="upload-area" onclick="document.getElementById('badge-file').click()">
+                    <div class="upload-icon">📤</div>
+                    <p class="upload-text">
+                        <strong>クリックしてバッジJSONをアップロード</strong><br>
+                        または、ここにファイルをドラッグ＆ドロップ
+                    </p>
+                    <input type="file" id="badge-file" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+                </div>
+
+                <div style="text-align: center; margin: 20px 0; color: #666;">または</div>
+
+                <div class="form-group">
+                    <label>バッジJSONを直接ペースト</label>
+                    <textarea id="badge-json-input" rows="6" placeholder='{"@context": [...], "type": ["VerifiableCredential", "OpenBadgeCredential"], ...}' style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace; font-size: 0.9rem;"></textarea>
+                </div>
+
+                <button class="btn-primary" onclick="verifyBadge()">🔍 バッジを検証</button>
+
+                <!-- Verification Result (Success) -->
+                <div id="verify-result-success" style="display: none;">
+                    <div class="verification-result success">
+                        <div class="verification-icon">✅</div>
+                        <div class="verification-title">検証成功：このバッジは有効です</div>
+
+                        <div class="badge-display" style="background: #1a1a2e;">
+                            <div class="badge-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                                <div class="badge-header">
+                                    <div class="badge-icon">🎓</div>
+                                    <div class="badge-title">
+                                        <h4>データサイエンス基礎</h4>
+                                        <p>○○大学</p>
+                                    </div>
+                                </div>
+                                <div class="badge-details">
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">受取人</span>
+                                        <span class="badge-detail-value">山田 太郎</span>
+                                    </div>
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">発行日</span>
+                                        <span class="badge-detail-value">2025-01-15</span>
+                                    </div>
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">署名</span>
+                                        <span class="badge-detail-value" style="color: #90EE90;">✓ 有効</span>
+                                    </div>
+                                    <div class="badge-detail-item">
+                                        <span class="badge-detail-label">発行者DID</span>
+                                        <span class="badge-detail-value" style="font-size: 0.8rem;">did:web:example.university.edu</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="instructions-box" style="margin-top: 20px;">
+                            <strong>✅ 検証結果の詳細：</strong>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>✓ 署名検証: 成功（Ed25519Signature2020）</li>
+                                <li>✓ 発行者確認: ○○大学（did:web:example.university.edu）</li>
+                                <li>✓ 有効期限: 有効（2025-01-15発行）</li>
+                                <li>✓ 改ざんチェック: 問題なし</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Result (Failed) - Hidden by default -->
+                <div id="verify-result-failed" style="display: none;">
+                    <div class="verification-result failed">
+                        <div class="verification-icon">❌</div>
+                        <div class="verification-title">検証失敗：このバッジは無効です</div>
+                        <div class="instructions-box" style="background: #fff; margin-top: 20px;">
+                            <strong>⚠️ 検出された問題：</strong>
+                            <ul style="margin-left: 20px; margin-top: 10px; color: #721c24;">
+                                <li>✗ 署名が無効または改ざんされています</li>
+                                <li>✗ 発行者の公開鍵を確認できません</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="system-status">
+            <h3>🖥️ システム状態</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">Badge Service:</span>
+                    <span class="status-indicator online">確認中...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">モード:</span>
+                    <span class="status-indicator" style="background: #e3f2fd; color: #1565c0;">OpenBadges 3.0</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 マイクロクレデンシャル発行・検証システム (OpenBadges 3.0 + W3C Verifiable Credentials)</p>
+            <p style="font-size: 0.85rem; opacity: 0.8;">OpenBadges 3.0準拠のバッジ発行・検証システム</p>
+        </footer>
+    </div>
+
+    <script>
+        // Store issued badge for download/copy
+        let issuedBadge = null;
+
+        // Role selection
+        function selectRole(role) {
+            document.getElementById('role-selector').style.display = 'none';
+            document.getElementById(role + '-view').style.display = 'block';
+        }
+
+        function resetRole() {
+            document.querySelectorAll('.role-view').forEach(v => v.style.display = 'none');
+            document.getElementById('role-selector').style.display = 'block';
+        }
+
+        // Mode switching
+        function switchMode(mode) {
+            if (mode === 'msvc') {
+                // Redirect to original page
+                window.location.href = 'index.html';
+            }
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // Badge issuance - calls actual API
+        async function issueBadge() {
+            const issueBtn = document.querySelector('.action-card .btn-primary');
+            const originalText = issueBtn.textContent;
+            issueBtn.textContent = '発行中...';
+            issueBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${BADGE_SERVICE_URL}/api/badge/issue`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipientName: document.getElementById('recipientName').value,
+                        recipientEmail: document.getElementById('recipientEmail').value,
+                        achievementName: document.getElementById('achievementName').value,
+                        achievementDescription: document.getElementById('achievementDescription').value,
+                        issuerName: document.getElementById('issuerName').value,
+                        courseName: document.getElementById('courseName').value,
+                        courseCode: document.getElementById('courseCode').value,
+                        completionDate: document.getElementById('completionDate').value,
+                        grade: document.getElementById('grade').value,
+                        credits: document.getElementById('credits').value ? parseInt(document.getElementById('credits').value) : null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                issuedBadge = data.credential;
+
+                // Update badge display with actual data
+                document.getElementById('badge-display-name').textContent = issuedBadge.name || issuedBadge.credentialSubject?.achievement?.name;
+                document.getElementById('badge-display-issuer').textContent = issuedBadge.issuer?.name || issuedBadge.issuer?.id;
+                document.getElementById('badge-display-recipient').textContent = issuedBadge.credentialSubject?.name;
+                document.getElementById('badge-display-date').textContent = issuedBadge.credentialSubject?.achievedDate || issuedBadge.validFrom?.split('T')[0];
+
+                // Extract grade and credits from results
+                const results = issuedBadge.credentialSubject?.result || [];
+                const gradeResult = results.find(r => r.resultDescription?.resultType === 'GradeLevel');
+                const creditsResult = results.find(r => r.resultDescription?.resultType === 'CreditHours');
+                document.getElementById('badge-display-grade').textContent = gradeResult?.value || '-';
+                document.getElementById('badge-display-credits').textContent = (creditsResult?.value || '0') + '単位';
+
+                // Update JSON display
+                document.getElementById('json-output').textContent = JSON.stringify(issuedBadge, null, 2);
+
+                // Show result
+                document.getElementById('badge-result').style.display = 'block';
+                document.getElementById('badge-result').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Badge issuance error:', error);
+                alert('バッジの発行に失敗しました: ' + error.message);
+            } finally {
+                issueBtn.textContent = originalText;
+                issueBtn.disabled = false;
+            }
+        }
+
+        // Download badge
+        function downloadBadge() {
+            if (!issuedBadge) {
+                alert('先にバッジを発行してください');
+                return;
+            }
+
+            const blob = new Blob([JSON.stringify(issuedBadge, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `badge-${issuedBadge.credentialSubject?.name?.replace(/\s/g, '-') || 'credential'}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Copy badge JSON
+        function copyBadgeJson() {
+            if (!issuedBadge) {
+                alert('先にバッジを発行してください');
+                return;
+            }
+            const json = JSON.stringify(issuedBadge, null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                alert('JSONをクリップボードにコピーしました');
+            });
+        }
+
+        // Email badge
+        function emailBadge() {
+            const subject = encodeURIComponent('OpenBadge: ' + document.getElementById('achievementName').value);
+            const body = encodeURIComponent('以下のOpenBadgeを発行しました。添付のJSONファイルを保存してください。');
+            window.location.href = `mailto:${document.getElementById('recipientEmail').value}?subject=${subject}&body=${body}`;
+        }
+
+        // File upload handling
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('badge-json-input').value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('upload-area');
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.name.endsWith('.json')) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        document.getElementById('badge-json-input').value = evt.target.result;
+                    };
+                    reader.readAsText(file);
+                }
+            });
+        }
+
+        // Verify badge - calls actual API
+        async function verifyBadge() {
+            const jsonInput = document.getElementById('badge-json-input').value;
+
+            if (!jsonInput.trim()) {
+                alert('バッジJSONを入力またはアップロードしてください');
+                return;
+            }
+
+            let credential;
+            try {
+                credential = JSON.parse(jsonInput);
+            } catch (e) {
+                alert('無効なJSON形式です');
+                document.getElementById('verify-result-success').style.display = 'none';
+                document.getElementById('verify-result-failed').style.display = 'block';
+                document.getElementById('verify-result-failed').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const verifyBtn = document.querySelector('#company-view .btn-primary');
+            const originalText = verifyBtn.textContent;
+            verifyBtn.textContent = '検証中...';
+            verifyBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${BADGE_SERVICE_URL}/api/badge/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ credential })
+                });
+
+                const result = await response.json();
+
+                if (result.verified) {
+                    // Update success display with actual credential info
+                    const successCard = document.querySelector('#verify-result-success .badge-card');
+                    if (successCard) {
+                        const info = result.credentialInfo || {};
+                        successCard.querySelector('.badge-title h4').textContent = info.achievement?.name || credential.name || 'Unknown';
+                        successCard.querySelector('.badge-title p').textContent = info.issuer?.name || 'Unknown Issuer';
+
+                        const details = successCard.querySelectorAll('.badge-detail-value');
+                        if (details[0]) details[0].textContent = info.subject?.name || 'Unknown';
+                        if (details[1]) details[1].textContent = info.validFrom?.split('T')[0] || 'Unknown';
+                        if (details[3]) details[3].textContent = info.issuer?.id || 'Unknown';
+                    }
+
+                    document.getElementById('verify-result-success').style.display = 'block';
+                    document.getElementById('verify-result-failed').style.display = 'none';
+                    document.getElementById('verify-result-success').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    // Update failure message
+                    const failedBox = document.querySelector('#verify-result-failed .instructions-box ul');
+                    if (failedBox) {
+                        failedBox.innerHTML = `<li>✗ ${result.error || '署名検証に失敗しました'}</li>`;
+                    }
+
+                    document.getElementById('verify-result-success').style.display = 'none';
+                    document.getElementById('verify-result-failed').style.display = 'block';
+                    document.getElementById('verify-result-failed').scrollIntoView({ behavior: 'smooth' });
+                }
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                alert('検証に失敗しました: ' + error.message);
+                document.getElementById('verify-result-success').style.display = 'none';
+                document.getElementById('verify-result-failed').style.display = 'block';
+            } finally {
+                verifyBtn.textContent = originalText;
+                verifyBtn.disabled = false;
+            }
+        }
+
+        // Check Badge Service status on load
+        async function checkBadgeServiceStatus() {
+            const statusIndicator = document.querySelector('.status-indicator.online');
+            try {
+                const response = await fetch(`${BADGE_SERVICE_URL}/health`);
+                if (response.ok) {
+                    if (statusIndicator) {
+                        statusIndicator.textContent = 'オンライン';
+                        statusIndicator.classList.add('online');
+                    }
+                } else {
+                    throw new Error('Service unavailable');
+                }
+            } catch (e) {
+                if (statusIndicator) {
+                    statusIndicator.textContent = 'オフライン';
+                    statusIndicator.classList.remove('online');
+                    statusIndicator.style.background = '#f8d7da';
+                    statusIndicator.style.color = '#721c24';
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', checkBadgeServiceStatus);
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "id": "did:web:example.university.edu#key-1",
+  "type": "Ed25519VerificationKey2020",
+  "controller": "did:web:example.university.edu",
+  "publicKeyMultibase": "z6Mki3AnMiMBYv1WbFveWXxBopsZo2Jou8rT1wJj5FF4t35g"
+}
