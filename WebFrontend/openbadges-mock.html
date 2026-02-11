@@ -1077,6 +1077,9 @@
             }
         }
 
+        // Store wallet badges for reference
+        let walletBadges = [];
+
         // Load student wallet by email
         async function loadWallet() {
             const email = document.getElementById('walletEmail').value.trim();
@@ -1099,18 +1102,20 @@
                 const data = await response.json();
 
                 if (data.badges && data.badges.length > 0) {
+                    // Store badges for later reference
+                    walletBadges = data.badges;
                     countSpan.textContent = `(${data.count}件)`;
-                    badgesDiv.innerHTML = data.badges.map(badge => `
+                    badgesDiv.innerHTML = data.badges.map((badge, index) => `
                         <div class="badge-display" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 15px;">
                             <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
                                 <div class="badge-icon" style="background: white; flex-shrink: 0;">🎓</div>
                                 <div style="flex: 1; min-width: 200px;">
-                                    <h4 style="margin: 0 0 5px 0;">${badge.achievement_name}</h4>
-                                    <p style="margin: 0; opacity: 0.9;">${badge.issuer_name} | ${new Date(badge.issued_at).toLocaleDateString('ja-JP')}</p>
+                                    <h4 style="margin: 0 0 5px 0;">${escapeHtml(badge.achievement_name)}</h4>
+                                    <p style="margin: 0; opacity: 0.9;">${escapeHtml(badge.issuer_name)} | ${new Date(badge.issued_at).toLocaleDateString('ja-JP')}</p>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
-                                    <button class="btn-secondary" style="background: white; border: none;" onclick='showBadgeDetail(${JSON.stringify(badge.credential).replace(/'/g, "&#39;")})'>👁️ 詳細</button>
-                                    <button class="btn-secondary" style="background: white; border: none;" onclick='downloadWalletBadge(${JSON.stringify(badge.credential).replace(/'/g, "&#39;")}, "${badge.recipient_name}")'>📥 保存</button>
+                                    <button class="btn-secondary" style="background: white; border: none;" onclick="showBadgeDetailByIndex(${index})">👁️ 詳細</button>
+                                    <button class="btn-secondary" style="background: white; border: none;" onclick="downloadWalletBadgeByIndex(${index})">📥 保存</button>
                                 </div>
                             </div>
                         </div>
@@ -1126,20 +1131,34 @@
             }
         }
 
-        // Show badge detail in modal/alert
-        function showBadgeDetail(credential) {
-            alert(JSON.stringify(credential, null, 2));
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
         }
 
-        // Download badge from wallet
-        function downloadWalletBadge(credential, recipientName) {
-            const blob = new Blob([JSON.stringify(credential, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `badge-${recipientName.replace(/\s/g, '-')}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+        // Show badge detail by index
+        function showBadgeDetailByIndex(index) {
+            if (walletBadges[index]) {
+                const credential = walletBadges[index].credential || walletBadges[index].credential_json;
+                alert(JSON.stringify(credential, null, 2));
+            }
+        }
+
+        // Download badge from wallet by index
+        function downloadWalletBadgeByIndex(index) {
+            if (walletBadges[index]) {
+                const badge = walletBadges[index];
+                const credential = badge.credential || badge.credential_json;
+                const blob = new Blob([JSON.stringify(credential, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `badge-${(badge.recipient_name || 'credential').replace(/\s/g, '-')}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
         }
 
         // Load issued badges (for university view)
