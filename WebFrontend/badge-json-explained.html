@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenBadges 3.0 JSON構造解説</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 20px;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .card h3 {
+            color: #444;
+            font-size: 1.2rem;
+            margin: 25px 0 15px 0;
+        }
+
+        /* JSON表示エリア */
+        .json-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 900px) {
+            .json-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .json-box {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 25px;
+            overflow-x: auto;
+        }
+
+        .json-box pre {
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .explanation-box {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+        }
+
+        /* シンタックスハイライト */
+        .json-key { color: #9cdcfe; }
+        .json-string { color: #ce9178; }
+        .json-number { color: #b5cea8; }
+        .json-bracket { color: #ffd700; }
+        .json-comment { color: #6a9955; font-style: italic; }
+
+        /* フィールド解説 */
+        .field-list {
+            list-style: none;
+        }
+
+        .field-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .field-name {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+
+        .field-required {
+            background: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
+
+        .field-optional {
+            background: #6c757d;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
+
+        .field-desc {
+            margin-top: 10px;
+            color: #555;
+        }
+
+        .field-example {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* セクション番号 */
+        .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        /* 階層図 */
+        .hierarchy {
+            background: #1a1a2e;
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            font-family: monospace;
+            line-height: 2;
+        }
+
+        .hierarchy-item {
+            padding-left: 20px;
+            border-left: 2px solid #444;
+            margin-left: 10px;
+        }
+
+        .hierarchy-label {
+            color: #9cdcfe;
+        }
+
+        .hierarchy-desc {
+            color: #6a9955;
+            font-size: 0.85rem;
+        }
+
+        /* 注意事項 */
+        .note-box {
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 20px 0;
+        }
+
+        .note-box.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .note-box h4 {
+            color: #0066cc;
+            margin-bottom: 8px;
+        }
+
+        .note-box.warning h4 {
+            color: #856404;
+        }
+
+        /* 表 */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .info-table th,
+        .info-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-table th {
+            background: #f8f9ff;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* フッター */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        footer a {
+            color: #667eea;
+        }
+
+        /* ナビゲーション */
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: white;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📋 OpenBadges 3.0 JSON構造解説</h1>
+        <p>バッジデータの中身を理解する</p>
+    </header>
+
+    <div class="container">
+        <div class="nav-links">
+            <a href="system-overview.html" class="nav-link">← システム概要に戻る</a>
+            <a href="openbadges-mock.html" class="nav-link">🏅 システムを使う</a>
+        </div>
+
+        <!-- 全体構造 -->
+        <div class="card">
+            <h2><span class="section-num">1</span>バッジJSONの全体像</h2>
+            <p>OpenBadges 3.0のバッジは、JSON形式のテキストデータです。以下のような階層構造になっています。</p>
+
+            <div class="hierarchy" style="margin: 25px 0;">
+                <div>📄 <span class="hierarchy-label">OpenBadgeCredential</span> <span class="hierarchy-desc">← バッジ全体</span></div>
+                <div class="hierarchy-item">
+                    <div>├─ <span class="hierarchy-label">@context</span> <span class="hierarchy-desc">← 使用する規格の定義</span></div>
+                    <div>├─ <span class="hierarchy-label">id</span> <span class="hierarchy-desc">← バッジの一意識別子</span></div>
+                    <div>├─ <span class="hierarchy-label">type</span> <span class="hierarchy-desc">← データの種類</span></div>
+                    <div>├─ <span class="hierarchy-label">issuer</span> <span class="hierarchy-desc">← 発行者（大学）情報</span></div>
+                    <div class="hierarchy-item">
+                        <div>├─ <span class="hierarchy-label">id</span> <span class="hierarchy-desc">← 発行者のDID</span></div>
+                        <div>├─ <span class="hierarchy-label">type</span></div>
+                        <div>└─ <span class="hierarchy-label">name</span> <span class="hierarchy-desc">← 大学名</span></div>
+                    </div>
+                    <div>├─ <span class="hierarchy-label">validFrom</span> <span class="hierarchy-desc">← 発行日時</span></div>
+                    <div>├─ <span class="hierarchy-label">name</span> <span class="hierarchy-desc">← バッジ名</span></div>
+                    <div>├─ <span class="hierarchy-label">credentialSubject</span> <span class="hierarchy-desc">← 受取人・資格情報</span></div>
+                    <div class="hierarchy-item">
+                        <div>├─ <span class="hierarchy-label">id</span> <span class="hierarchy-desc">← 受取人の識別子</span></div>
+                        <div>├─ <span class="hierarchy-label">name</span> <span class="hierarchy-desc">← 受取人の氏名</span></div>
+                        <div>├─ <span class="hierarchy-label">achievement</span> <span class="hierarchy-desc">← 達成内容</span></div>
+                        <div class="hierarchy-item">
+                            <div>├─ <span class="hierarchy-label">name</span> <span class="hierarchy-desc">← 資格名</span></div>
+                            <div>├─ <span class="hierarchy-label">description</span> <span class="hierarchy-desc">← 説明</span></div>
+                            <div>└─ <span class="hierarchy-label">criteria</span> <span class="hierarchy-desc">← 取得条件</span></div>
+                        </div>
+                        <div>└─ <span class="hierarchy-label">result</span> <span class="hierarchy-desc">← 成績・単位</span></div>
+                    </div>
+                    <div>└─ <span class="hierarchy-label">proof</span> <span class="hierarchy-desc">← 電子署名</span></div>
+                    <div class="hierarchy-item">
+                        <div>├─ <span class="hierarchy-label">type</span> <span class="hierarchy-desc">← 署名方式</span></div>
+                        <div>├─ <span class="hierarchy-label">created</span> <span class="hierarchy-desc">← 署名日時</span></div>
+                        <div>├─ <span class="hierarchy-label">verificationMethod</span> <span class="hierarchy-desc">← 検証用鍵の場所</span></div>
+                        <div>└─ <span class="hierarchy-label">proofValue</span> <span class="hierarchy-desc">← 署名データ</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 実際のJSON例 -->
+        <div class="card">
+            <h2><span class="section-num">2</span>実際のJSONサンプル</h2>
+            <p>以下は、「データサイエンス基礎」という講座を修了した学生に発行されたバッジの例です。</p>
+
+            <div class="json-box" style="margin: 25px 0;">
+                <pre>{
+  <span class="json-comment">// 使用する規格の定義（W3C VC + OpenBadges 3.0）</span>
+  <span class="json-key">"@context"</span>: <span class="json-bracket">[</span>
+    <span class="json-string">"https://www.w3.org/ns/credentials/v2"</span>,
+    <span class="json-string">"https://purl.imsglobal.org/spec/ob/v3p0/context-3.0.3.json"</span>
+  <span class="json-bracket">]</span>,
+
+  <span class="json-comment">// このバッジの一意な識別子（UUID形式）</span>
+  <span class="json-key">"id"</span>: <span class="json-string">"urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>,
+
+  <span class="json-comment">// データの種類</span>
+  <span class="json-key">"type"</span>: <span class="json-bracket">[</span><span class="json-string">"VerifiableCredential"</span>, <span class="json-string">"OpenBadgeCredential"</span><span class="json-bracket">]</span>,
+
+  <span class="json-comment">// 発行者（大学）の情報</span>
+  <span class="json-key">"issuer"</span>: <span class="json-bracket">{</span>
+    <span class="json-key">"id"</span>: <span class="json-string">"did:web:example.university.edu"</span>,
+    <span class="json-key">"type"</span>: <span class="json-bracket">[</span><span class="json-string">"Profile"</span><span class="json-bracket">]</span>,
+    <span class="json-key">"name"</span>: <span class="json-string">"○○大学"</span>
+  <span class="json-bracket">}</span>,
+
+  <span class="json-comment">// 発行日時（ISO 8601形式）</span>
+  <span class="json-key">"validFrom"</span>: <span class="json-string">"2025-01-15T09:00:00Z"</span>,
+
+  <span class="json-comment">// バッジの名前</span>
+  <span class="json-key">"name"</span>: <span class="json-string">"データサイエンス基礎"</span>,
+
+  <span class="json-comment">// 受取人と達成内容</span>
+  <span class="json-key">"credentialSubject"</span>: <span class="json-bracket">{</span>
+    <span class="json-key">"id"</span>: <span class="json-string">"urn:uuid:student-id-12345"</span>,
+    <span class="json-key">"type"</span>: <span class="json-bracket">[</span><span class="json-string">"AchievementSubject"</span><span class="json-bracket">]</span>,
+    <span class="json-key">"name"</span>: <span class="json-string">"山田 太郎"</span>,
+
+    <span class="json-comment">// 達成した資格・講座の詳細</span>
+    <span class="json-key">"achievement"</span>: <span class="json-bracket">{</span>
+      <span class="json-key">"id"</span>: <span class="json-string">"urn:uuid:achievement-id-67890"</span>,
+      <span class="json-key">"type"</span>: <span class="json-bracket">[</span><span class="json-string">"Achievement"</span><span class="json-bracket">]</span>,
+      <span class="json-key">"name"</span>: <span class="json-string">"データサイエンス基礎"</span>,
+      <span class="json-key">"description"</span>: <span class="json-string">"データサイエンスの基礎的な知識とスキルを習得..."</span>,
+      <span class="json-key">"criteria"</span>: <span class="json-bracket">{</span>
+        <span class="json-key">"narrative"</span>: <span class="json-string">"データサイエンス入門を修了し、評価基準を満たした"</span>
+      <span class="json-bracket">}</span>,
+      <span class="json-key">"fieldOfStudy"</span>: <span class="json-string">"データサイエンス入門"</span>,
+      <span class="json-key">"humanCode"</span>: <span class="json-string">"DS101"</span>
+    <span class="json-bracket">}</span>,
+
+    <span class="json-comment">// 成績・単位数</span>
+    <span class="json-key">"result"</span>: <span class="json-bracket">[</span>
+      <span class="json-bracket">{</span>
+        <span class="json-key">"type"</span>: <span class="json-bracket">[</span><span class="json-string">"Result"</span><span class="json-bracket">]</span>,
+        <span class="json-key">"resultDescription"</span>: <span class="json-bracket">{</span>
+          <span class="json-key">"name"</span>: <span class="json-string">"成績評価"</span>,
+          <span class="json-key">"resultType"</span>: <span class="json-string">"GradeLevel"</span>
+        <span class="json-bracket">}</span>,
+        <span class="json-key">"value"</span>: <span class="json-string">"優秀"</span>
+      <span class="json-bracket">}</span>,
+      <span class="json-bracket">{</span>
+        <span class="json-key">"type"</span>: <span class="json-bracket">[</span><span class="json-string">"Result"</span><span class="json-bracket">]</span>,
+        <span class="json-key">"resultDescription"</span>: <span class="json-bracket">{</span>
+          <span class="json-key">"name"</span>: <span class="json-string">"単位数"</span>,
+          <span class="json-key">"resultType"</span>: <span class="json-string">"CreditHours"</span>
+        <span class="json-bracket">}</span>,
+        <span class="json-key">"value"</span>: <span class="json-string">"2"</span>
+      <span class="json-bracket">}</span>
+    <span class="json-bracket">]</span>,
+
+    <span class="json-key">"achievedDate"</span>: <span class="json-string">"2025-01-15"</span>
+  <span class="json-bracket">}</span>,
+
+  <span class="json-comment">// 電子署名（改ざん防止）</span>
+  <span class="json-key">"proof"</span>: <span class="json-bracket">{</span>
+    <span class="json-key">"type"</span>: <span class="json-string">"Ed25519Signature2020"</span>,
+    <span class="json-key">"created"</span>: <span class="json-string">"2025-01-15T09:00:00Z"</span>,
+    <span class="json-key">"verificationMethod"</span>: <span class="json-string">"did:web:example.university.edu#key-1"</span>,
+    <span class="json-key">"proofPurpose"</span>: <span class="json-string">"assertionMethod"</span>,
+    <span class="json-key">"proofValue"</span>: <span class="json-string">"z3FXQjecWufY46...（署名データ）"</span>
+  <span class="json-bracket">}</span>
+}</pre>
+            </div>
+        </div>
+
+        <!-- 各フィールドの詳細解説 -->
+        <div class="card">
+            <h2><span class="section-num">3</span>各フィールドの詳細解説</h2>
+
+            <h3>📌 基本情報</h3>
+            <ul class="field-list">
+                <li class="field-item">
+                    <span class="field-name">@context</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        このJSONがどの規格に従っているかを示します。OpenBadges 3.0では、W3C Verifiable Credentialsと1EdTech OpenBadgesの2つのコンテキストを指定します。
+                    </div>
+                    <div class="field-example">
+                        "https://www.w3.org/ns/credentials/v2" → W3C VC規格<br>
+                        "https://purl.imsglobal.org/spec/ob/v3p0/..." → OpenBadges 3.0規格
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">id</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        このバッジを一意に識別するためのID。通常はUUID（ランダムな文字列）を使用します。世界中で重複しない一意の値です。
+                    </div>
+                    <div class="field-example">
+                        例: "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">type</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        このデータの種類を示す配列。「VerifiableCredential」（検証可能な資格情報）と「OpenBadgeCredential」（OpenBadges形式）の両方を指定します。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">name</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        バッジの名前。人間が読んでわかりやすい名称を設定します。
+                    </div>
+                    <div class="field-example">
+                        例: "データサイエンス基礎"、"プログラミング入門修了証"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">validFrom</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        バッジの有効開始日時。ISO 8601形式で記述します。通常は発行日時と同じです。
+                    </div>
+                    <div class="field-example">
+                        例: "2025-01-15T09:00:00Z"（2025年1月15日 9:00 UTC）
+                    </div>
+                </li>
+            </ul>
+
+            <h3>🏛️ 発行者情報（issuer）</h3>
+            <ul class="field-list">
+                <li class="field-item">
+                    <span class="field-name">issuer.id</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        発行者（大学など）を識別するDID（分散型識別子）。この値から公開鍵を取得し、署名を検証します。
+                    </div>
+                    <div class="field-example">
+                        例: "did:web:example.university.edu"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">issuer.name</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        発行者の名称。人間が読んでわかる組織名を設定します。
+                    </div>
+                    <div class="field-example">
+                        例: "○○大学"、"△△専門学校"
+                    </div>
+                </li>
+            </ul>
+
+            <h3>👤 受取人・資格情報（credentialSubject）</h3>
+            <ul class="field-list">
+                <li class="field-item">
+                    <span class="field-name">credentialSubject.name</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        バッジを受け取る人の氏名。
+                    </div>
+                    <div class="field-example">
+                        例: "山田 太郎"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">credentialSubject.achievement</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        達成した内容の詳細。資格名、説明、取得条件などを含みます。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">achievement.name</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        達成した資格・講座の名称。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">achievement.description</span>
+                    <span class="field-optional">任意</span>
+                    <div class="field-desc">
+                        資格の説明文。どのような知識・スキルを証明するかを記述します。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">achievement.criteria</span>
+                    <span class="field-optional">任意</span>
+                    <div class="field-desc">
+                        この資格を取得するための条件。何をすれば取得できるかを説明します。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">achievement.fieldOfStudy</span>
+                    <span class="field-optional">任意</span>
+                    <div class="field-desc">
+                        学習分野・講座名。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">achievement.humanCode</span>
+                    <span class="field-optional">任意</span>
+                    <div class="field-desc">
+                        講座コード。大学のシラバスなどで使用される識別コード。
+                    </div>
+                    <div class="field-example">
+                        例: "DS101"、"CS201"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">credentialSubject.result</span>
+                    <span class="field-optional">任意</span>
+                    <div class="field-desc">
+                        成績や単位数などの結果情報。複数の結果を配列で格納できます。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">credentialSubject.achievedDate</span>
+                    <span class="field-optional">任意</span>
+                    <div class="field-desc">
+                        資格を取得した日付。
+                    </div>
+                </li>
+            </ul>
+
+            <h3>🔐 電子署名（proof）</h3>
+            <ul class="field-list">
+                <li class="field-item">
+                    <span class="field-name">proof.type</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        署名アルゴリズムの種類。本システムではEd25519（エドワーズ曲線デジタル署名）を使用しています。
+                    </div>
+                    <div class="field-example">
+                        例: "Ed25519Signature2020"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">proof.created</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        署名が作成された日時。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">proof.verificationMethod</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        署名を検証するための公開鍵の場所。発行者のDIDと鍵のIDを組み合わせた形式です。
+                    </div>
+                    <div class="field-example">
+                        例: "did:web:example.university.edu#key-1"
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">proof.proofPurpose</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        署名の目的。「assertionMethod」は、この内容が正しいと主張するための署名であることを示します。
+                    </div>
+                </li>
+
+                <li class="field-item">
+                    <span class="field-name">proof.proofValue</span>
+                    <span class="field-required">必須</span>
+                    <div class="field-desc">
+                        実際の署名データ。Base64でエンコードされた文字列です。この値と公開鍵を使って、データが改ざんされていないかを検証します。
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- DIDについて -->
+        <div class="card">
+            <h2><span class="section-num">4</span>DID（分散型識別子）について</h2>
+            <p>JSONの中に登場する「did:web:...」という形式は、DID（Decentralized Identifier：分散型識別子）と呼ばれるものです。</p>
+
+            <div class="note-box" style="margin: 20px 0;">
+                <h4>💡 DIDとは？</h4>
+                <p>DIDは、組織や個人を一意に識別するための新しい形式の識別子です。従来のURL（ウェブアドレス）のように中央管理者に依存せず、自分自身で管理できる識別子として設計されています。</p>
+            </div>
+
+            <table class="info-table">
+                <thead>
+                    <tr>
+                        <th>DIDの形式</th>
+                        <th>説明</th>
+                        <th>例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>did:web:</code></td>
+                        <td>ウェブドメインを使ったDID。既存のウェブインフラを活用</td>
+                        <td>did:web:example.university.edu</td>
+                    </tr>
+                    <tr>
+                        <td><code>did:key:</code></td>
+                        <td>公開鍵そのものをDIDとして使用</td>
+                        <td>did:key:z6Mkf5rG...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 20px;">本システムでは <code>did:web</code> 形式を使用しています。これにより、大学のウェブサイトのドメインを使って発行者を識別できます。</p>
+        </div>
+
+        <!-- 検証の仕組み -->
+        <div class="card">
+            <h2><span class="section-num">5</span>検証時に何が起きるか</h2>
+            <p>企業がバッジを検証するとき、システムは以下の処理を自動的に行います。</p>
+
+            <div style="background: #f8f9ff; border-radius: 12px; padding: 25px; margin: 20px 0;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                    <div>
+                        <strong>発行者情報の取得</strong>
+                        <p style="color: #666; margin: 5px 0 0 0;">issuer.id（DID）から発行者の公開鍵を取得</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                    <div>
+                        <strong>データの整形</strong>
+                        <p style="color: #666; margin: 5px 0 0 0;">proof以外の部分を取り出し、署名時と同じ形式に整形</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+                    <div>
+                        <strong>署名の検証</strong>
+                        <p style="color: #666; margin: 5px 0 0 0;">公開鍵とproofValueを使って、データと署名が一致するか確認</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; background: #28a745; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</div>
+                    <div>
+                        <strong>結果判定</strong>
+                        <p style="color: #666; margin: 5px 0 0 0;">一致すれば「有効」、不一致なら「改ざんあり」と判定</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note-box warning">
+                <h4>⚠️ 改ざんすると...</h4>
+                <p>バッジのデータを1文字でも変更すると、署名検証が失敗します。例えば、成績を「良」から「優」に書き換えても、proofValueと一致しなくなるため、改ざんが検出されます。</p>
+            </div>
+        </div>
+
+        <!-- まとめ -->
+        <div class="card">
+            <h2><span class="section-num">6</span>まとめ</h2>
+
+            <table class="info-table">
+                <thead>
+                    <tr>
+                        <th>セクション</th>
+                        <th>含まれる情報</th>
+                        <th>役割</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>@context, type</strong></td>
+                        <td>規格の定義</td>
+                        <td>このデータがOpenBadges 3.0形式であることを示す</td>
+                    </tr>
+                    <tr>
+                        <td><strong>id, name, validFrom</strong></td>
+                        <td>バッジ基本情報</td>
+                        <td>バッジを識別し、いつ発行されたかを示す</td>
+                    </tr>
+                    <tr>
+                        <td><strong>issuer</strong></td>
+                        <td>発行者情報</td>
+                        <td>どの大学が発行したかを示す</td>
+                    </tr>
+                    <tr>
+                        <td><strong>credentialSubject</strong></td>
+                        <td>受取人・資格情報</td>
+                        <td>誰が何を達成したかを示す</td>
+                    </tr>
+                    <tr>
+                        <td><strong>proof</strong></td>
+                        <td>電子署名</td>
+                        <td>改ざんされていないことを証明する</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>OpenBadges 3.0 マイクロクレデンシャルシステム</p>
+            <p style="margin-top: 10px;">
+                <a href="system-overview.html">システム概要</a> ｜
+                <a href="openbadges-mock.html">システムを使う</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
